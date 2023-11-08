@@ -1,5 +1,5 @@
 package it.unicam.cs.ids.loyalty.view;
 //commento per la view
-public class homeView {
+public class HomeView {
 
 }
