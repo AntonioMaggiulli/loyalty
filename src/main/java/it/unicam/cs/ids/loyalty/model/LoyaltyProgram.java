@@ -10,7 +10,7 @@ public class LoyaltyProgram {
     private boolean isCoalition;
     private List<Merchant> merchants;
     private List<Membership> memberships;
-    private List<LoyaltyLevel> loyaltyLevels;
+    private List<Level> loyaltyLevels;
  
     public LoyaltyProgram(int id, String programName, String description, boolean isCoalition) {
         this.id = id;
@@ -67,15 +67,15 @@ public class LoyaltyProgram {
         return memberships;
     }
  
-    public void addLoyaltyLevel(LoyaltyLevel loyaltyLevel) {
+    public void addLoyaltyLevel(Level loyaltyLevel) {
         loyaltyLevels.add(loyaltyLevel);
     }
  
-    public void removeLoyaltyLevel(LoyaltyLevel loyaltyLevel) {
+    public void removeLoyaltyLevel(Level loyaltyLevel) {
         loyaltyLevels.remove(loyaltyLevel);
     }
  
-    public List<LoyaltyLevel> getLoyaltyLevels() {
+    public List<Level> getLoyaltyLevels() {
         return loyaltyLevels;
     }
  

@@ -22,11 +22,11 @@ public class Registry {
 		return instance;
 	}
  
-	public void createLoyaltyProgram(Merchant partner, String programName, String programDescription,
+	public void createLoyaltyProgram(Merchant merchant, String programName, String programDescription,
 			boolean coalizione) {
 		LoyaltyProgram loyaltyProgram = new LoyaltyProgram(0, programName, programDescription, coalizione);
  
-		loyaltyProgram.addProgramPartner(partner);
+		loyaltyProgram.addMerchant(merchant);
 		loyaltyPrograms.add(loyaltyProgram);
 	}
  
@@ -35,9 +35,9 @@ public class Registry {
 		availableServices.add(service);
 	}
  
-	public void addServiceLevelToLoyaltyProgram(LoyaltyProgram loyaltyProgram, Level serviceLevel) {
-		loyaltyProgram.addServiceLevel(serviceLevel);
-		availableServiceLevels.add(serviceLevel);
+	public void addServiceLevelToLoyaltyProgram(LoyaltyProgram loyaltyProgram, Level level) {
+		loyaltyProgram.addLoyaltyLevel(level);
+		availableServiceLevels.add(level);
 	}
  
 	public List<LoyaltyProgram> getLoyaltyPrograms() {
