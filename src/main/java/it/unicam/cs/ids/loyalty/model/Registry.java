@@ -22,25 +22,5 @@ public class Registry {
 		return instance;
 	}
  
-	public void createLoyaltyProgram(Merchant merchant, String programName, String programDescription,
-			boolean coalizione) {
-		LoyaltyProgram loyaltyProgram = new LoyaltyProgram(0, programName, programDescription, coalizione);
- 
-		loyaltyProgram.addMerchant(merchant);
-		loyaltyPrograms.add(loyaltyProgram);
-	}
- 
-	public void addServiceToLoyaltyProgram(LoyaltyProgram loyaltyProgram, Benefit service) {
-		loyaltyProgram.addService(service);
-		availableServices.add(service);
-	}
- 
-	public void addServiceLevelToLoyaltyProgram(LoyaltyProgram loyaltyProgram, Level level) {
-		loyaltyProgram.addLoyaltyLevel(level);
-		availableServiceLevels.add(level);
-	}
- 
-	public List<LoyaltyProgram> getLoyaltyPrograms() {
-		return loyaltyPrograms;
-	}
+
 }
