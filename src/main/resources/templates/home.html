@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalty Program Manager</title>
+</head>
+<body>
+
+<h1>Welcome to the Loyalty Program Manager!</h1>
+
+<h2>Create a New Loyalty Program</h2>
+<form id="loyaltyProgramForm">
+    <label for="programName">Program Name:</label>
+    <input type="text" id="programName" name="programName" required><br>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea><br>
+
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" name="startDate" required><br>
+
+    <button type="button" onclick="createLoyaltyProgram()">Create Loyalty Program</button>
+</form>
+
+<script>
+    function createLoyaltyProgram() {
+        const programName = document.getElementById('programName').value;
+        const description = document.getElementById('description').value;
+        const startDate = document.getElementById('startDate').value;
+
+        const loyaltyProgram = {
+            programName: programName,
+            description: description,
+            startDate: startDate
+        };
+
+        fetch('/createLoyaltyProgram', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loyaltyProgram),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+</body>
+</html>

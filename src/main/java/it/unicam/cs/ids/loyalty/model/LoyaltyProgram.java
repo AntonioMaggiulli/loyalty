@@ -26,6 +26,7 @@ public class LoyaltyProgram {
 
 	@OneToMany(mappedBy = "loyaltyProgram")
 	private List<Level> levels;
+;
 
 	@OneToMany(mappedBy = "loyaltyProgram")
 	private List<Partnership> partnerships;
