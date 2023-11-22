@@ -150,7 +150,7 @@ public class Benefit {
      * @param membership The membership to apply the benefit to.
      */
     public void applyBenefit(Membership membership) {
-        MembershipAccount loyaltyAccount = membership.getLoyaltyAccount();
+        MembershipAccount loyaltyAccount = membership.getMembershipAccount();
 
         if (loyaltyAccount != null) {
             int pointsEarned = earnsPoints ? getPointsRequired() : 0;
