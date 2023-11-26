@@ -1,27 +1,30 @@
 package it.unicam.cs.ids.loyalty.controller;
-import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
-import it.unicam.cs.ids.loyalty.service.CrudService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 
-/**
- * Controller class for managing LoyaltyProgram-related requests.
- */
+import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
+import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/loyaltyPrograms")
+@RequestMapping("/loyaltyPrograms")
 public class LoyaltyProgramController {
 
-    private final CrudService<LoyaltyProgram> loyaltyProgramService;
+    private final DefaultLoyaltyProgramService loyaltyProgramService;
 
     @Autowired
-    public LoyaltyProgramController(CrudService<LoyaltyProgram> loyaltyProgramService) {
+    public LoyaltyProgramController(DefaultLoyaltyProgramService loyaltyProgramService) {
         this.loyaltyProgramService = loyaltyProgramService;
     }
 
@@ -31,14 +34,24 @@ public class LoyaltyProgramController {
     }
 
     @GetMapping("/{id}")
-    public LoyaltyProgram getLoyaltyProgramById(@PathVariable int id) {
+    public Optional<LoyaltyProgram> getLoyaltyProgramById(@PathVariable int id) {
         return loyaltyProgramService.getById(id)
-                .orElseThrow(() -> new EntityNotFoundException("LoyaltyProgram not found with id: " + id));
+               ;
     }
 
     @GetMapping("/byname/{programName}")
-    public LoyaltyProgram getLoyaltyProgramByName(@PathVariable String programName) {
+    public Optional<LoyaltyProgram> getLoyaltyProgramByName(@PathVariable String programName) {
         return loyaltyProgramService.getByName(programName)
-                .orElseThrow(() -> new EntityNotFoundException("LoyaltyProgram not found with name: " + programName));
+                ;}
+
+    @PostMapping
+    public ResponseEntity<LoyaltyProgram> createLoyaltyProgram(
+            @RequestParam String programName,
+            @RequestParam String description,
+            @RequestParam boolean isCoalition,
+            @RequestParam int merchantId) {
+        LoyaltyProgram loyaltyProgram = loyaltyProgramService.createLoyaltyProgram(programName, description, isCoalition, merchantId);
+        return new ResponseEntity<>(loyaltyProgram, HttpStatus.CREATED);
     }
 }
+

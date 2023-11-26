@@ -21,6 +21,11 @@ public class Transaction {
     private int pointsSpent;
     private double eurosSpent;
     private LocalDateTime timestamp;
+    
+
+    @ManyToOne
+    @JoinColumn(name = "membership_account_id")
+    private MembershipAccount membershipAccount;
 
     /**
      * Creates a new transaction.

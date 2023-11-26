@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Azienda</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Collega il tuo foglio di stile CSS -->
+</head>
+<body>
+    <header>
+        <h1>Dashboard Azienda</h1>
+    </header>
+
+    <section class="dashboard-section">
+        <h2>Benvenuto nella tua dashboard</h2>
+        <p>Qui puoi gestire i tuoi programmi fedeltà e benefici per i clienti.</p>
+
+        <!-- Aggiungi un menu a discesa per selezionare il merchant -->
+        <label for="merchantSelector">Seleziona un merchant:</label>
+        <select id="merchantSelector" onchange="mostraDashboard()">
+            <!-- Opzioni dinamiche caricate dal backend -->
+        </select>
+
+        <!-- Contenuto dinamico della dashboard -->
+        <div id="dashboard" style="display: none;">
+            <!-- Contenuto della dashboard -->
+            <a href="creaProgrammaFedelta">Crea Programmi Fedeltà</a>
+            <!-- Aggiungi altre opzioni della dashboard se necessario -->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 Cruciani&Maggiulli</p>
+    </footer>
+
+    <script>
+        // Funzione per caricare la lista dei merchant dal backend
+        function caricaMerchants() {
+            fetch('http://localhost:8080/api/merchants')
+                .then(response => response.json())
+                .then(merchants => {
+                    // Popola il menu a discesa con i merchant disponibili
+                    const merchantSelector = document.getElementById('merchantSelector');
+                    merchants.forEach(merchant => {
+                        const option = document.createElement('option');
+                        option.value = merchant.id;
+                        option.text = merchant.name;
+                        merchantSelector.appendChild(option);
+                    });
+                });
+        }
+
+        // Funzione per mostrare la dashboard in base alla selezione del merchant
+        function mostraDashboard() {
+            const merchantId = document.getElementById('merchantSelector').value;
+
+            // Logica per mostrare la dashboard corretta in base all'ID del merchant
+            if (merchantId) {
+                // Nascondi la dashboard corrente
+                document.getElementById('dashboard').style.display = 'none';
+
+                // Logica per recuperare i dati della dashboard dal backend (se necessario)
+
+                // Costruisci l'URL con il parametro del merchant
+                const url = `creaProgrammaFedelta?merchantId=${merchantId}`;
+
+                // Redireziona alla pagina creaProgrammaFedelta.html con il parametro del merchant
+                window.location.href = url;
+            }
+        }
+        // Chiama la funzione al caricamento della pagina
+        window.onload = caricaMerchants;
+    </script>
+</body>
+</html>

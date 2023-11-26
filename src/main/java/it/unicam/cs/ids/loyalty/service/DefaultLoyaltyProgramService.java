@@ -1,9 +1,15 @@
 package it.unicam.cs.ids.loyalty.service;
 
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
+import it.unicam.cs.ids.loyalty.model.Merchant;
+import it.unicam.cs.ids.loyalty.model.Partnership;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
+import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,12 +22,15 @@ import java.util.Optional;
 public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram> {
 
     private final LoyaltyProgramRepository loyaltyProgramRepository;
+    private final MerchantRepository merchantRepository;
 
     @Autowired
-    public DefaultLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository) {
+    public DefaultLoyaltyProgramService(
+            LoyaltyProgramRepository loyaltyProgramRepository,
+            MerchantRepository merchantRepository) {
         this.loyaltyProgramRepository = loyaltyProgramRepository;
+        this.merchantRepository = merchantRepository;
     }
-
     @Override
     public List<LoyaltyProgram> getAll() {
         return loyaltyProgramRepository.findAll();
@@ -56,33 +65,27 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
     }
 
     /**
-     * Bean definition for the main LoyaltyProgramService.
-     *
-     * @param loyaltyProgramRepository The LoyaltyProgramRepository to be injected.
-     * @return The DefaultLoyaltyProgramService bean.
-     */
-    @Bean
-    public DefaultLoyaltyProgramService mainLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository) {
-        return new DefaultLoyaltyProgramService(loyaltyProgramRepository);
-    }
-
-    /**
-     * Creates a new LoyaltyProgram entity.
+     * Creates a new LoyaltyProgram entity and associates it with the specified merchant.
      *
      * @param loyaltyProgram The LoyaltyProgram entity to create.
+     * @param merchantId     The ID of the merchant to associate with the loyalty program.
      * @return The created LoyaltyProgram entity.
      */
-    public LoyaltyProgram createLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
-        // Add logic here to validate or further process the loyalty program before saving
+    public LoyaltyProgram createLoyaltyProgram(String programName, String description, boolean isCoalition, int merchantId) {
+    	LoyaltyProgram loyaltyProgram = new LoyaltyProgram(programName, description, isCoalition);
+        Optional<Merchant> optionalMerchant = merchantRepository.findById(merchantId);
+        Merchant merchant = optionalMerchant.orElseThrow(() ->
+                new EntityNotFoundException("Merchant not found with id: " + merchantId));
 
-        // Perform additional operations if needed
-
-        // Update the loyalty program
+        Partnership partnership = new Partnership();
+        partnership.setMerchant(merchant);
+        partnership.setLoyaltyProgram(loyaltyProgram);
+        loyaltyProgram.addPartnership(partnership);
         LoyaltyProgram createdProgram = loyaltyProgramRepository.save(loyaltyProgram);
 
-        // Perform any additional operations or validations after saving, if needed
 
         return createdProgram;
     }
 }
+
 

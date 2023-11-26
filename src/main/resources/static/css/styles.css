@@ -1,0 +1,104 @@
+/* Generali */
+
+body {
+  font-family: "Helvetica Neue", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Form */
+
+form {
+  width: 350px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: lightgray;
+  border: 1px solid #ccc;
+}
+
+/* Intestazione */
+
+.form-header {
+  text-align: center;
+  color: #fff;
+  background-color: #0099CC;
+}
+
+/* Campi di input */
+
+input,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Label */
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Pulsante di invio */
+
+.submit-button {
+  background-color: #fff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* Stato di errore */
+
+.error {
+  color: #f00;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Accessibilità */
+
+label[for] {
+  cursor: pointer;
+}
+
+input[type="submit"] {
+  cursor: pointer;
+}
+
+/* Personalizzazioni */
+
+.form-header {
+  border-bottom: 1px solid #ccc;
+}
+
+.submit-button {
+  background-color: #0099CC;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.error {
+  color: #f00;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* h1 */
+
+h1 {
+  text-align: center;
+  color: #fff;
+  background-color: #000000;
+}
