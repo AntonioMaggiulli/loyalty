@@ -160,5 +160,37 @@ public class Benefit {
             loyaltyAccount.addTransaction(transaction);
         }
     }
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setPointsRequired(int pointsRequired) {
+		this.pointsRequired = pointsRequired;
+	}
+
+	public void setEarnsPoints(boolean earnsPoints) {
+		this.earnsPoints = earnsPoints;
+	}
+
+	public void setCoupon(boolean isCoupon) {
+		this.isCoupon = isCoupon;
+	}
+
+	public void setEuroSpent(double euroSpent) {
+		this.euroSpent = euroSpent;
+	}
+
+	public void setOfferingMerchant(Merchant offeringMerchant) {
+		this.offeringMerchant = offeringMerchant;
+	}
 }
 

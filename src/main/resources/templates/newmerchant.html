@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Integra gli eventuali tag di intestazione -->
+</head>
+<body>
+
+    <h2>Crea Nuovo Merchant</h2>
+    <!-- Usa Thymeleaf per collegare il form all'oggetto Merchant -->
+    <form th:action="@{/newmerchant}" th:object="${merchant}" method="post">
+        <label for="name">Nome:</label>
+        <input type="text" id="name" th:field="*{name}" required>
+
+        <label for="description">Descrizione:</label>
+        <textarea id="description" th:field="*{description}" required></textarea>
+
+        <!-- Aggiungi altri campi del Merchant secondo necessità -->
+
+        <button type="submit">Crea Merchant</button>
+    </form>
+
+</body>
+</html>

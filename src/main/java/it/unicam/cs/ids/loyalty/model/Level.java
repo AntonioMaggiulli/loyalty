@@ -12,7 +12,11 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class Level {
  
-    @Id
+    public void setLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
+		this.loyaltyProgram = loyaltyProgram;
+	}
+ 
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int uniqueId;
  

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard del Merchant</title>
+    <style>
+        /* Aggiungi eventuali stili CSS qui */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Dashboard del Merchant</h1>
+    </header>
+
+    <section class="merchant-details-section">
+        <h2>Dati del Merchant</h2>
+
+        <!-- Contenuto dinamico della dashboard -->
+        <div id="merchantDetails">
+            <!-- I dati del merchant saranno visualizzati qui -->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 Nome della Tua Azienda</p>
+    </footer>
+
+    <script>
+        // Funzione per caricare i dati del merchant dal backend
+        function caricaDatiMerchant(merchantId) {
+            fetch(`http://localhost:8080/api/merchant/${merchantId}`)
+                .then(response => response.json())
+                .then(merchant => {
+                    // Popola la sezione dei dettagli del merchant con i dati ottenuti dal backend
+                    const merchantDetails = document.getElementById('merchantDetails');
+                    merchantDetails.innerHTML = `
+                        <p>ID: ${merchant.id}</p>
+                        <p>Nome: ${merchant.name}</p>
+                        <!-- Aggiungi altri dettagli del merchant se necessario -->
+                    `;
+                });
+        }
+
+        // Funzione per estrarre il merchantId dall'URL
+        function ottieniMerchantIdDaURL() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            return urlParams.get('merchantId');
+        }
+
+        // Funzione principale per inizializzare la pagina
+        function inizializzaPagina() {
+            const merchantId = ottieniMerchantIdDaURL();
+
+            // Carica i dati del merchant solo se l'ID è presente nell'URL
+            if (merchantId) {
+                caricaDatiMerchant(merchantId);
+            } else {
+                // Se l'ID del merchant non è presente, gestisci il caso di errore o reindirizza altrove
+                // Puoi personalizzare questa parte in base alle tue esigenze
+                alert('ID del merchant non valido.');
+                // Esempio: reindirizza alla pagina principale
+                window.location.href = 'http://localhost:8080/';
+            }
+        }
+
+        // Chiama la funzione al caricamento della pagina
+        window.onload = inizializzaPagina;
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard del Merchant</title>
+    <style>
+        /* Aggiungi eventuali stili CSS qui */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Dashboard del Merchant</h1>
+    </header>
+
+    <section class="dashboard-section">
+        <h2>Seleziona un Merchant</h2>
+        <p>Scegli un merchant dal menu a discesa per visualizzare i suoi dati:</p>
+
+        <!-- Menu a discesa per selezionare il merchant -->
+        <label for="merchantSelector">Seleziona un merchant:</label>
+        <select id="merchantSelector" onchange="apriDashboard()">
+            <!-- Opzioni dinamiche caricate dal backend -->
+        </select>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 Nome della Tua Azienda</p>
+    </footer>
+
+    <script>
+        // Funzione per caricare la lista dei merchant dal backend
+        function caricaMerchants() {
+            fetch('http://localhost:8080/api/merchants')
+                .then(response => response.json())
+                .then(merchants => {
+                    // Popola il menu a discesa con i merchant disponibili
+                    const merchantSelector = document.getElementById('merchantSelector');
+                    merchants.forEach(merchant => {
+                        const option = document.createElement('option');
+                        option.value = merchant.id;
+                        option.text = merchant.name;
+                        merchantSelector.appendChild(option);
+                    });
+                });
+        }
+
+        // Funzione per aprire la dashboard del merchant selezionato in una nuova pagina
+        function apriDashboard() {
+            const merchantId = document.getElementById('merchantSelector').value;
+
+            // Logica per aprire una nuova pagina con i dati del merchant in base all'ID
+            if (merchantId) {
+                // Costruisci l'URL con il parametro del merchant
+                const url = `http://localhost:8080/merchant-dashboard?merchantId=${merchantId}`;
+
+                // Apri la nuova pagina
+                window.open(url, '_blank');
+            }
+        }
+
+        // Chiama la funzione al caricamento della pagina
+        window.onload = caricaMerchants;
+    </script>
+</body>
+</html>
+

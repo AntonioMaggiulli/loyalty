@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crea Programma Fedeltà</title>
+</head>
+<body>
+    <h1>Crea Programma Fedeltà</h1>
+
+    <form id="loyaltyProgramForm">
+        <label for="programName">Nome Programma:</label>
+        <input type="text" id="programName" name="programName" required>
+
+        <label for="description">Descrizione:</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <label for="isCoalition">Coalizione:</label>
+        <input type="checkbox" id="isCoalition" name="isCoalition">
+
+        <button type="button" onclick="creaProgrammaFedelta()">Crea Programma Fedeltà</button>
+    </form>
+
+    <script>
+    // Funzione per gestire il clic sul pulsante "Crea Programma Fedeltà"
+    function creaProgrammaFedelta() {
+        // Estrai l'ID del merchant dalla URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const merchantId = urlParams.get('merchantId');
+
+        // Dati del programma fedeltà
+        const loyaltyProgramData = {
+            programName: "Nome del programma",
+            description: "Descrizione del programma",
+            active: true,
+            merchantId: parseInt(merchantId)  // Converte l'ID in un numero, se necessario
+        };
+
+        // Invia la richiesta POST
+        fetch('http://localhost:8080/loyaltyPrograms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loyaltyProgramData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // Puoi fare ulteriori azioni qui, come reindirizzare l'utente o aggiornare la pagina
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Collega la funzione al clic sul pulsante "Crea Programma Fedeltà"
+    document.getElementById('creaProgrammaFedeltaBtn').addEventListener('click', creaProgrammaFedelta);
+
+    </script>
+</body>
+</html>

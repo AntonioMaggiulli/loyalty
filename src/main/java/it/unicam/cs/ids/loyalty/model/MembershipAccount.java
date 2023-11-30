@@ -3,11 +3,23 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.*;
 /**
- * Represents a membership account associated with a loyalty program.
- */
+* Represents a membership account associated with a loyalty program.
+*/
 @Entity
 public class MembershipAccount {
-    @Id
+    public void setId(Long id) {
+		this.id = id;
+	}
+	public void setMembership(Membership membership) {
+		this.membership = membership;
+	}
+	public void setLoyaltyPoints(int loyaltyPoints) {
+		this.loyaltyPoints = loyaltyPoints;
+	}
+	public void setTransactions(List<Transaction> transactions) {
+		this.transactions = transactions;
+	}
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
@@ -73,4 +85,3 @@ public class MembershipAccount {
        loyaltyPoints += (pointsEarned - pointsSpent);
     }
 }
- 
