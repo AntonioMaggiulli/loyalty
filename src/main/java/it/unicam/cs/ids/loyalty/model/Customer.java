@@ -124,12 +124,4 @@ public class Customer {
     public void setTessereClientes(List<MemberCard> tessereClientes) {
        this.cards = tessereClientes;
     }
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public void setCards(List<MemberCard> cards) {
-		this.cards = cards;
-	}
 }

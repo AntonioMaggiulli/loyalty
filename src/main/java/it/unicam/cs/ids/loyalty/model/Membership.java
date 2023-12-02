@@ -1,27 +1,27 @@
 package it.unicam.cs.ids.loyalty.model;
 import jakarta.persistence.*;
- 
+
 /**
-* Represents a membership in a loyalty program.
-*/
+ * Represents a membership in a loyalty program.
+ */
 @Entity
 public class Membership {
- 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
- 
+
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
- 
+
     @ManyToOne
     @JoinColumn(name = "loyalty_program_id", nullable = false)
     private LoyaltyProgram loyaltyProgram;
- 
+
     @OneToOne(mappedBy = "membership", cascade = CascadeType.ALL)
     private MembershipAccount membershipAccount;
- 
+
     /**
      * Creates a new membership.
      *
@@ -33,7 +33,7 @@ public class Membership {
        this.loyaltyProgram = loyaltyProgram;
        this.membershipAccount = new MembershipAccount(this);
     }
- 
+
     /**
      * Retrieves the ID of the membership.
      *
@@ -42,7 +42,7 @@ public class Membership {
     public int getId() {
        return id;
     }
- 
+
     /**
      * Retrieves the customer associated with the membership.
      *
@@ -51,7 +51,7 @@ public class Membership {
     public Customer getCustomer() {
        return customer;
     }
- 
+
     /**
      * Retrieves the loyalty program associated with the membership.
      *
@@ -60,7 +60,7 @@ public class Membership {
     public LoyaltyProgram getLoyaltyProgram() {
        return loyaltyProgram;
     }
- 
+
     /**
      * Retrieves the membership account associated with the membership.
      *
@@ -69,21 +69,21 @@ public class Membership {
     public MembershipAccount getMembershipAccount() {
        return membershipAccount;
     }
- 
+
 	public void setId(int id) {
 		this.id = id;
 	}
- 
+
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
 	}
- 
+
 	public void setLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
 		this.loyaltyProgram = loyaltyProgram;
 	}
- 
+
 	public void setMembershipAccount(MembershipAccount membershipAccount) {
 		this.membershipAccount = membershipAccount;
 	}
- 
+
 }

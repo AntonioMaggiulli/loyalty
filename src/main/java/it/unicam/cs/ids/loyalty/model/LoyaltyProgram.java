@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.List;
 
+import it.unicam.cs.ids.loyalty.LoyaltyApplication;
+
 /**
  * Represents a loyalty program offered by Merchants.
  */
@@ -230,4 +232,8 @@ public class LoyaltyProgram {
 	public void removePartnership(Partnership partnership) {
 		this.partnerships.remove(partnership);
 	}
+
+
+		
+	
 }

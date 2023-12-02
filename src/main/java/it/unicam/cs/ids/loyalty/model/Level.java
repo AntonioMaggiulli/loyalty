@@ -15,7 +15,7 @@ public class Level {
     public void setLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
 		this.loyaltyProgram = loyaltyProgram;
 	}
- 
+
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int uniqueId;
@@ -38,9 +38,10 @@ public class Level {
      * @param name        The name of the level.
      * @param description The description of the level.
      */
-    public Level(String name, String description) {
+    public Level(String name, String description, LoyaltyProgram loyaltyProgram) {
         this.name = name;
         this.description = description;
+        this.loyaltyProgram=loyaltyProgram;
     }
  
     public int getUniqueId() {

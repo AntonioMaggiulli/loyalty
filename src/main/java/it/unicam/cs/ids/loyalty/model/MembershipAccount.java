@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.*;
 /**
-* Represents a membership account associated with a loyalty program.
-*/
+ * Represents a membership account associated with a loyalty program.
+ */
 @Entity
 public class MembershipAccount {
     public void setId(Long id) {
@@ -85,3 +85,4 @@ public class MembershipAccount {
        loyaltyPoints += (pointsEarned - pointsSpent);
     }
 }
+ 

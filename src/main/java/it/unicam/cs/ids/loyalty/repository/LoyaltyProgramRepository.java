@@ -22,5 +22,14 @@ public interface LoyaltyProgramRepository extends JpaRepository<LoyaltyProgram, 
 	 * @return An instance of {@link LoyaltyProgram} if found, or an empty Optional.
 	 */
 	List<LoyaltyProgram> findByProgramName(String programName);
+	
+	/**
+	 * Finds loyalty program by the condition "is coalition" true/false
+	 *
+	 * @param programName The name of the loyalty program to search for.
+	 * @return An instance of {@link LoyaltyProgram} if found, or an empty Optional.
+	 */
+	List<LoyaltyProgram> findByIsCoalition(boolean isCoalition);
+
 
 }

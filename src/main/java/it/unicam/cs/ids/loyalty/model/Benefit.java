@@ -8,7 +8,39 @@ import jakarta.persistence.*;
 @Entity
 public class Benefit {
 
-    @Id
+    public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setPointsRequired(int pointsRequired) {
+		this.pointsRequired = pointsRequired;
+	}
+
+	public void setEarnsPoints(boolean earnsPoints) {
+		this.earnsPoints = earnsPoints;
+	}
+
+	public void setCoupon(boolean isCoupon) {
+		this.isCoupon = isCoupon;
+	}
+
+	public void setEuroSpent(double euroSpent) {
+		this.euroSpent = euroSpent;
+	}
+
+	public void setOfferingMerchant(Merchant offeringMerchant) {
+		this.offeringMerchant = offeringMerchant;
+	}
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
@@ -23,6 +55,10 @@ public class Benefit {
 
     @ManyToOne
     private LoyaltyProgram loyaltyProgram;
+    
+    @ManyToOne
+    @JoinColumn(name = "associated_level_id")
+    private Level associatedLevel;
 
     /**
      * Default constructor.
@@ -161,36 +197,12 @@ public class Benefit {
         }
     }
 
-	public void setId(int id) {
-		this.id = id;
+	public Level getAssociatedLevel() {
+		return associatedLevel;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public void setPointsRequired(int pointsRequired) {
-		this.pointsRequired = pointsRequired;
-	}
-
-	public void setEarnsPoints(boolean earnsPoints) {
-		this.earnsPoints = earnsPoints;
-	}
-
-	public void setCoupon(boolean isCoupon) {
-		this.isCoupon = isCoupon;
-	}
-
-	public void setEuroSpent(double euroSpent) {
-		this.euroSpent = euroSpent;
-	}
-
-	public void setOfferingMerchant(Merchant offeringMerchant) {
-		this.offeringMerchant = offeringMerchant;
+	public void setAssociatedLevel(Level associatedLevel) {
+		this.associatedLevel = associatedLevel;
 	}
 }
 
