@@ -1,31 +1,33 @@
 package it.unicam.cs.ids.loyalty.model;
-
+ 
 import java.util.List;
-
+ 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-
+ 
 /**
- * JPA Entity representing a customer.
- */
+* JPA Entity representing a customer.
+*/
 @Entity
 public class Customer {
-
+ 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
+ 
     private String username;
     private String password;
     private String cognome;
     private String nome;
-
+ 
     @OneToMany(mappedBy = "customer")
     private List<MemberCard> cards;
-
+ 
+    @OneToMany(mappedBy = "customer")
+    private List<Membership> memberships;
     /**
      * Gets the ID of the customer.
      *
@@ -34,7 +36,7 @@ public class Customer {
     public int getId() {
        return id;
     }
-
+ 
     /**
      * Gets the username of the customer.
      *
@@ -43,7 +45,7 @@ public class Customer {
     public String getUsername() {
        return username;
     }
-
+ 
     /**
      * Sets the username of the customer.
      *
@@ -52,7 +54,7 @@ public class Customer {
     public void setUsername(String username) {
        this.username = username;
     }
-
+ 
     /**
      * Gets the password of the customer.
      *
@@ -61,7 +63,7 @@ public class Customer {
     public String getPassword() {
        return password;
     }
-
+ 
     /**
      * Sets the password of the customer.
      *
@@ -70,7 +72,7 @@ public class Customer {
     public void setPassword(String password) {
        this.password = password;
     }
-
+ 
     /**
      * Gets the last name of the customer.
      *
@@ -79,7 +81,7 @@ public class Customer {
     public String getCognome() {
        return cognome;
     }
-
+ 
     /**
      * Sets the last name of the customer.
      *
@@ -88,7 +90,7 @@ public class Customer {
     public void setCognome(String cognome) {
        this.cognome = cognome;
     }
-
+ 
     /**
      * Gets the first name of the customer.
      *
@@ -97,7 +99,7 @@ public class Customer {
     public String getNome() {
        return nome;
     }
-
+ 
     /**
      * Sets the first name of the customer.
      *
@@ -106,7 +108,7 @@ public class Customer {
     public void setNome(String nome) {
        this.nome = nome;
     }
-
+ 
     /**
      * Gets the list of member cards associated with the customer.
      *
@@ -115,7 +117,7 @@ public class Customer {
     public List<MemberCard> getTessereClientes() {
        return cards;
     }
-
+ 
     /**
      * Sets the list of member cards associated with the customer.
      *
