@@ -8,7 +8,7 @@ import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
-import it.unicam.cs.ids.loyalty.service.DefaultBenefitService;
+import it.unicam.cs.ids.loyalty.service.*;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;

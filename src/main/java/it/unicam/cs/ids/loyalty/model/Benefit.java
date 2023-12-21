@@ -6,9 +6,9 @@ import jakarta.persistence.*;
  * Represents a benefit in the loyalty program.
  */
 @Entity
-public class Benefit {
+public abstract class Benefit {
 
-    public void setId(int id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -24,178 +24,137 @@ public class Benefit {
 		this.pointsRequired = pointsRequired;
 	}
 
-	public void setEarnsPoints(boolean earnsPoints) {
-		this.earnsPoints = earnsPoints;
-	}
-
-	public void setCoupon(boolean isCoupon) {
-		this.isCoupon = isCoupon;
-	}
-
-	public void setEuroSpent(double euroSpent) {
-		this.euroSpent = euroSpent;
-	}
-
 	public void setOfferingMerchant(Merchant offeringMerchant) {
 		this.offeringMerchant = offeringMerchant;
 	}
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    private String name;
-    private String description;
-    private int pointsRequired;
-    private boolean earnsPoints;
-    private boolean isCoupon;
-    private double euroSpent;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+	private String name;
+	private String description;
 
-    @ManyToOne
-    private Merchant offeringMerchant;
+	@ManyToOne
+	private LoyaltyProgram loyaltyProgram;
 
-    @ManyToOne
-    private LoyaltyProgram loyaltyProgram;
-    
-    @ManyToOne
-    @JoinColumn(name = "associated_level_id")
-    private Level associatedLevel;
+	@ManyToOne
+	private Merchant offeringMerchant;
 
-    /**
-     * Default constructor.
-     */
-    public Benefit() {
-    }
+	@ManyToOne
+	@JoinColumn(name = "associated_level_id")
+	private Level associatedLevel;
+	private int pointsRequired;
+	private boolean exclusiveRequired;
 
-    /**
-     * Constructs a Benefit with the specified details.
-     *
-     * @param name             The name of the benefit.
-     * @param description      The description of the benefit.
-     * @param pointsRequired   The points required for the benefit.
-     * @param earnsPoints      Indicates if the benefit earns points.
-     * @param isCoupon         Indicates if the benefit is a coupon.
-     * @param euroSpent        The amount of euros spent for the benefit.
-     * @param offeringMerchant The merchant offering the benefit.
-     * @param loyaltyProgram   The loyalty program associated with the benefit.
-     */
-    public Benefit(String name, String description, int pointsRequired, boolean earnsPoints, boolean isCoupon,
-            double euroSpent, Merchant offeringMerchant, LoyaltyProgram loyaltyProgram) {
-        this.name = name;
-        this.description = description;
-        this.pointsRequired = pointsRequired;
-        this.earnsPoints = earnsPoints;
-        this.isCoupon = isCoupon;
-        this.euroSpent = euroSpent;
-        this.offeringMerchant = offeringMerchant;
-        this.loyaltyProgram = loyaltyProgram;
-    }
+	/**
+	 * Default constructor.
+	 */
+	public Benefit() {
+	}
 
-    /**
-     * Retrieves the ID of the benefit.
-     *
-     * @return The ID of the benefit.
-     */
-    public int getId() {
-        return id;
-    }
+	/**
+	 * Constructs a Benefit with the specified details.
+	 *
+	 * @param name             The name of the benefit.
+	 * @param description      The description of the benefit.
+	 * @param pointsRequired   The points required for the benefit.
+	 * @param offeringMerchant The merchant offering the benefit.
+	 * @param loyaltyProgram   The loyalty program associated with the benefit.
+	 */
+	public Benefit(String name, String description, int pointsRequired, Merchant offeringMerchant,
+			LoyaltyProgram loyaltyProgram) {
+		this.name = name;
+		this.description = description;
+		this.pointsRequired = pointsRequired;
+		this.offeringMerchant = offeringMerchant;
+		this.loyaltyProgram = loyaltyProgram;
+	}
 
-    /**
-     * Retrieves the name of the benefit.
-     *
-     * @return The name of the benefit.
-     */
-    public String getName() {
-        return name;
-    }
+	/**
+	 * Retrieves the ID of the benefit.
+	 *
+	 * @return The ID of the benefit.
+	 */
+	public int getId() {
+		return id;
+	}
 
-    /**
-     * Retrieves the description of the benefit.
-     *
-     * @return The description of the benefit.
-     */
-    public String getDescription() {
-        return description;
-    }
+	/**
+	 * Retrieves the name of the benefit.
+	 *
+	 * @return The name of the benefit.
+	 */
+	public String getName() {
+		return name;
+	}
 
-    /**
-     * Retrieves the points required for the benefit.
-     *
-     * @return The points required for the benefit.
-     */
-    public int getPointsRequired() {
-        return pointsRequired;
-    }
+	/**
+	 * Retrieves the description of the benefit.
+	 *
+	 * @return The description of the benefit.
+	 */
+	public String getDescription() {
+		return description;
+	}
 
-    /**
-     * Checks if the benefit earns points.
-     *
-     * @return True if the benefit earns points, false otherwise.
-     */
-    public boolean isEarnsPoints() {
-        return earnsPoints;
-    }
+	/**
+	 * Retrieves the points required for the benefit.
+	 *
+	 * @return The points required for the benefit.
+	 */
+	public int getPointsRequired() {
+		return pointsRequired;
+	}
 
-    /**
-     * Checks if the benefit is a coupon.
-     *
-     * @return True if the benefit is a coupon, false otherwise.
-     */
-    public boolean isCoupon() {
-        return isCoupon;
-    }
+	/**
+	 * Retrieves the amount of euros spent for the benefit.
+	 *
+	 * @return The amount of euros spent for the benefit.
+	 */
 
-    /**
-     * Retrieves the amount of euros spent for the benefit.
-     *
-     * @return The amount of euros spent for the benefit.
-     */
-    public double getEuroSpent() {
-        return euroSpent;
-    }
+	/**
+	 * Retrieves the merchant offering the benefit.
+	 *
+	 * @return The merchant offering the benefit.
+	 */
+	public Merchant getOfferingMerchant() {
+		return offeringMerchant;
+	}
 
-    /**
-     * Retrieves the merchant offering the benefit.
-     *
-     * @return The merchant offering the benefit.
-     */
-    public Merchant getOfferingMerchant() {
-        return offeringMerchant;
-    }
+	/**
+	 * Retrieves the loyalty program associated with the benefit.
+	 *
+	 * @return The loyalty program associated with the benefit.
+	 */
+	public LoyaltyProgram getLoyaltyProgram() {
+		return loyaltyProgram;
+	}
 
-    /**
-     * Retrieves the loyalty program associated with the benefit.
-     *
-     * @return The loyalty program associated with the benefit.
-     */
-    public LoyaltyProgram getLoyaltyProgram() {
-        return loyaltyProgram;
-    }
+	/**
+	 * Sets the loyalty program associated with the benefit.
+	 *
+	 * @param loyaltyProgram The loyalty program to set.
+	 */
+	public void setLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
+		this.loyaltyProgram = loyaltyProgram;
+	}
 
-    /**
-     * Sets the loyalty program associated with the benefit.
-     *
-     * @param loyaltyProgram The loyalty program to set.
-     */
-    public void setLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
-        this.loyaltyProgram = loyaltyProgram;
-    }
-
-    /**
-     * Applies the benefit to the membership, earning points or adding a transaction to the loyalty account.
-     *
-     * @param membership The membership to apply the benefit to.
-     */
-    public void applyBenefit(Membership membership) {
-        MembershipAccount loyaltyAccount = membership.getMembershipAccount();
-
-        if (loyaltyAccount != null) {
-            int pointsEarned = earnsPoints ? getPointsRequired() : 0;
-            double eurosSpent = isCoupon ? 0 : getEuroSpent();
-
-            Transaction transaction = new Transaction(this, pointsEarned, pointsRequired, eurosSpent);
-            loyaltyAccount.addTransaction(transaction);
-        }
-    }
+	/**
+	 * Applies the benefit to the membership, earning points or adding a transaction
+	 * to the loyalty account.
+	 *
+	 * @param membership The membership to apply the benefit to.
+	 */
+	public abstract void applyBenefit(Membership membership);
+	/*
+	 * MembershipAccount loyaltyAccount = membership.getMembershipAccount();
+	 * 
+	 * if (loyaltyAccount != null) { int pointsEarned = earnsPoints ?
+	 * getPointsRequired() : 0; double eurosSpent = isCoupon ? 0 : getEuroSpent();
+	 * 
+	 * Transaction transaction = new Transaction(this, pointsEarned, pointsRequired,
+	 * eurosSpent); loyaltyAccount.addTransaction(transaction); }
+	 */
 
 	public Level getAssociatedLevel() {
 		return associatedLevel;
@@ -204,5 +163,5 @@ public class Benefit {
 	public void setAssociatedLevel(Level associatedLevel) {
 		this.associatedLevel = associatedLevel;
 	}
-}
 
+}

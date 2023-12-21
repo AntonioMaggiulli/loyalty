@@ -1,5 +1,6 @@
 package it.unicam.cs.ids.loyalty.service;
  
+import it.unicam.cs.ids.loyalty.factories.BenefitFactory;
 import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
@@ -89,33 +90,35 @@ Partnership partnership=new Partnership(loyaltyProgram, merchant, currentDate);
 	
  
     }
-	public Benefit createBenefit(int merchantId, int loyaltyProgramId, int levelId, String name, String description, int pointsRequired, boolean earnsPoints, boolean isCoupon, double euroSpent) {
-	    // Recupera il merchant, loyaltyProgram e level
-	    Merchant merchant = getById(merchantId).get();
-	    LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId).get();
-	    Level level = levelRepository.findById(levelId).get();
- 
-	    // Verifica che merchant, loyaltyProgram e level esistano
-	    if (merchant != null && loyaltyProgram != null && level != null) {
-	        // Crea un nuovo Benefit
-	        Benefit newBenefit = new Benefit();
-	        newBenefit.setName(name);
-	        newBenefit.setDescription(description);
-	        newBenefit.setPointsRequired(pointsRequired);
-	        newBenefit.setEarnsPoints(earnsPoints);
-	        newBenefit.setCoupon(isCoupon);
-	        newBenefit.setEuroSpent(euroSpent);
-	        newBenefit.setOfferingMerchant(merchant);
-	        newBenefit.setLoyaltyProgram(loyaltyProgram);
-	        newBenefit.setAssociatedLevel(level);
- 
-	        // Salva il nuovo Benefit nel repository
-	        Benefit savedBenefit = benefitRepository.save(newBenefit);
- 
-	        return savedBenefit;
-	    } else {
-	        throw new IllegalArgumentException("Azienda, Programma Fedeltà o Livello non trovato.");
-	    }
+	public Benefit createBenefit(
+	        String type,
+	        String name,
+	        String description,
+	        int pointsRequired,
+	        int merchantId,
+	        int loyaltyProgramId,
+	        int levelId,
+	        Object... additionalParams
+	    ) {
+	        Merchant offeringMerchant = merchantRepository.findById(merchantId)
+	            .orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
+	        LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
+	            .orElseThrow(() -> new IllegalArgumentException("Programma Fedeltà non trovato."));
+	        Level associatedLevel = levelRepository.findById(levelId)
+	            .orElseThrow(() -> new IllegalArgumentException("Livello non trovato."));
+
+	        Benefit benefit = BenefitFactory.createBenefit(
+	            type,
+	            name,
+	            description,
+	            pointsRequired,
+	            offeringMerchant,
+	            loyaltyProgram,
+	            associatedLevel,
+	            additionalParams
+	        );
+	        return benefitRepository.save(benefit);
+
 	}
  
 	private LoyaltyProgram getLoyaltyProgramById(int loyaltyProgramId) {

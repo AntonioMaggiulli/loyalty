@@ -1,5 +1,6 @@
 package it.unicam.cs.ids.loyalty.model;
  
+import java.util.Date;
 import java.util.List;
  
 import jakarta.persistence.Entity;
@@ -18,13 +19,17 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
  
-    private String username;
-    private String password;
     private String cognome;
     private String nome;
- 
-    @OneToMany(mappedBy = "customer")
-    private List<MemberCard> cards;
+    private String codiceFiscale;
+    private String email;
+    private String telefono;
+    private String indirizzo;
+    private Date dateOfBirth;
+    private String referralCodeString;
+    private List<Feedback> feedbacks;
+    private List<Invitation> invitations;
+
  
     @OneToMany(mappedBy = "customer")
     private List<Membership> memberships;
@@ -35,42 +40,6 @@ public class Customer {
      */
     public int getId() {
        return id;
-    }
- 
-    /**
-     * Gets the username of the customer.
-     *
-     * @return The customer's username.
-     */
-    public String getUsername() {
-       return username;
-    }
- 
-    /**
-     * Sets the username of the customer.
-     *
-     * @param username The new username.
-     */
-    public void setUsername(String username) {
-       this.username = username;
-    }
- 
-    /**
-     * Gets the password of the customer.
-     *
-     * @return The customer's password.
-     */
-    public String getPassword() {
-       return password;
-    }
- 
-    /**
-     * Sets the password of the customer.
-     *
-     * @param password The new password.
-     */
-    public void setPassword(String password) {
-       this.password = password;
     }
  
     /**
@@ -108,22 +77,80 @@ public class Customer {
     public void setNome(String nome) {
        this.nome = nome;
     }
- 
-    /**
-     * Gets the list of member cards associated with the customer.
-     *
-     * @return The list of member cards.
-     */
-    public List<MemberCard> getTessereClientes() {
-       return cards;
-    }
- 
-    /**
-     * Sets the list of member cards associated with the customer.
-     *
-     * @param tessereClientes The new list of member cards.
-     */
-    public void setTessereClientes(List<MemberCard> tessereClientes) {
-       this.cards = tessereClientes;
-    }
+
+	public String getCodiceFiscale() {
+		return codiceFiscale;
+	}
+
+	public void setCodiceFiscale(String codiceFiscale) {
+		this.codiceFiscale = codiceFiscale;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
+	}
+
+	public String getReferralCodeString() {
+		return referralCodeString;
+	}
+
+	public void setReferralCodeString(String referralCodeString) {
+		this.referralCodeString = referralCodeString;
+	}
+
+	public List<Feedback> getFeedbacks() {
+		return feedbacks;
+	}
+
+	public void setFeedbacks(List<Feedback> feedbacks) {
+		this.feedbacks = feedbacks;
+	}
+
+	public List<Invitation> getInvitations() {
+		return invitations;
+	}
+
+	public void setInvitations(List<Invitation> invitations) {
+		this.invitations = invitations;
+	}
+
+	public List<Membership> getMemberships() {
+		return memberships;
+	}
+
+	public void setMemberships(List<Membership> memberships) {
+		this.memberships = memberships;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 }

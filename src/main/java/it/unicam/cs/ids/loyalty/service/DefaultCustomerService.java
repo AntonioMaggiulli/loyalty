@@ -99,7 +99,7 @@ public class DefaultCustomerService implements CrudService<Customer> {
         Membership savedMembership = membershipRepository.save(newMembership);
  
         // Crea una nuova MemberCard
-        MemberCard newMemberCard = new MemberCard(newMembershipAccount,customer);
+        MemberCard newMemberCard = new MemberCard(newMembership);
        
  
 		// Salva la nuova MemberCard
