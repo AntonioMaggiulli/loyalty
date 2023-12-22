@@ -5,9 +5,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import it.unicam.cs.ids.loyalty.LoyaltyApplication;
+import org.hibernate.bytecode.internal.bytebuddy.PrivateAccessorException;
+
 
 /**
  * Represents a loyalty program offered by Merchants.
@@ -28,15 +32,22 @@ public class LoyaltyProgram {
 
 	@OneToMany(mappedBy = "loyaltyProgram")
 	private List<Level> levels;
-;
+
 
 	@OneToMany(mappedBy = "loyaltyProgram")
 	private List<Partnership> partnerships;
+	
+	private Date expiringDate;
+	
+	/*@OneToMany(mappedBy="loyaltyProgram")
+	private List<Benefit> benefits; */
 
 	/**
 	 * Default constructor.
 	 */
 	public LoyaltyProgram() {
+		this.memberships=new ArrayList<>();
+		this.partnerships=new ArrayList<>();
 	}
 
 	/**
@@ -185,8 +196,12 @@ public class LoyaltyProgram {
 	 * @param membership The membership to add.
 	 */
 	public void addMembership(Membership membership) {
-		this.memberships.add(membership);
-	}
+	        if (membership != null) {
+	            this.memberships.add(membership);
+	            membership.setLoyaltyProgram(this);
+	        }
+	    }
+	
 
 	/**
 	 * Removes a membership from the loyalty program's list of memberships.
@@ -221,8 +236,11 @@ public class LoyaltyProgram {
 	 * @param partnership The partnership to add.
 	 */
 	public void addPartnership(Partnership partnership) {
-		this.partnerships.add(partnership);
-	}
+        if (partnership != null) {
+            this.partnerships.add(partnership);
+            partnership.setLoyaltyProgram(this);
+        }
+    }
 
 	/**
 	 * Removes a partnership from the loyalty program's list of partnerships.

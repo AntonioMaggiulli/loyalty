@@ -28,6 +28,10 @@ public class MembershipAccount {
     private int loyaltyPoints;
     @OneToMany(mappedBy = "membershipAccount", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
+    public MembershipAccount() {
+        
+     }
+    
     /**
      * Creates a new membership account.
      *

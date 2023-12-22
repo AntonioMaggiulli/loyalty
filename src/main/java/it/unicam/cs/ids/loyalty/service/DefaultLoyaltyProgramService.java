@@ -117,7 +117,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 	public List<LoyaltyProgram> getByMerchant(int idMerchant) {
 		// Recupera le partnership associate all'azienda specificata
-		List<Partnership> partnerships = partnershipRepository.findByMerchantID(idMerchant);
+		List<Partnership> partnerships = partnershipRepository.findByMerchantId(idMerchant);
 
 		// Crea una lista per i programmi fedeltà associati
 		List<LoyaltyProgram> associatedPrograms = partnerships.stream().map(Partnership::getLoyaltyProgram).toList();

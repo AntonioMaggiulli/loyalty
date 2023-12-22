@@ -33,6 +33,7 @@ public abstract class Benefit {
 	private int id;
 	private String name;
 	private String description;
+	
 
 	@ManyToOne
 	private LoyaltyProgram loyaltyProgram;

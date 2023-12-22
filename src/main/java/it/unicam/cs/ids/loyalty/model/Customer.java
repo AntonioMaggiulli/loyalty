@@ -1,5 +1,6 @@
 package it.unicam.cs.ids.loyalty.model;
  
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
  
@@ -15,7 +16,11 @@ import jakarta.persistence.OneToMany;
 @Entity
 public class Customer {
  
-    @Id
+    public Customer() {
+		super();
+	}
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
  
@@ -26,11 +31,14 @@ public class Customer {
     private String telefono;
     private String indirizzo;
     private Date dateOfBirth;
-    private String referralCodeString;
+    private String referralCode;
+    
+    @OneToMany(mappedBy = "writer")
     private List<Feedback> feedbacks;
+
+    @OneToMany(mappedBy = "sender")
     private List<Invitation> invitations;
 
- 
     @OneToMany(mappedBy = "customer")
     private List<Membership> memberships;
     /**
@@ -119,11 +127,11 @@ public class Customer {
 	}
 
 	public String getReferralCodeString() {
-		return referralCodeString;
+		return referralCode;
 	}
 
 	public void setReferralCodeString(String referralCodeString) {
-		this.referralCodeString = referralCodeString;
+		this.referralCode = referralCodeString;
 	}
 
 	public List<Feedback> getFeedbacks() {
@@ -153,4 +161,33 @@ public class Customer {
 	public void setId(int id) {
 		this.id = id;
 	}
+	public void addFeedback(Feedback feedback) {
+	    if (feedbacks == null) {
+	        feedbacks = new ArrayList<>();
+	    }
+	    feedbacks.add(feedback);
+	    feedback.setWriter(this);
+	}
+	public void removeFeedback(Feedback feedback) {
+	    if (feedbacks != null) {
+	        feedbacks.remove(feedback);
+	        feedback.setWriter(null);
+	    }
+	}
+	public void addInvitation(Invitation invitation) {
+	    if (invitations == null) {
+	        invitations = new ArrayList<>();
+	    }
+	    invitations.add(invitation);
+	    invitation.setSender(this);
+	}
+
+	public void removeInvitation(Invitation invitation) {
+	    if (invitations != null && invitations.contains(invitation)) {
+	        invitations.remove(invitation);
+	        invitation.setSender(null);
+	    }
+	}
+
+
 }

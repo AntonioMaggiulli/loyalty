@@ -8,7 +8,7 @@ public class Invitation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id") // Assumi che ci sia una colonna 'sender_id' nella tabella 'invitation'
@@ -59,7 +59,7 @@ public class Invitation {
         this.invitationDate = invitationDate;
     }
 
-    public Membership getMembership() {
+   public Membership getMembership() {
         return membership;
     }
 
@@ -67,11 +67,11 @@ public class Invitation {
         this.membership = membership;
     }
 
-	public Long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 

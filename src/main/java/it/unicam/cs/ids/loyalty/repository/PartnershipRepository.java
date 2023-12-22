@@ -9,5 +9,5 @@ import it.unicam.cs.ids.loyalty.model.Partnership;
 @Repository
 public interface PartnershipRepository extends JpaRepository<Partnership, Integer> {
 
-	List<Partnership> findByMerchantID(int idMerchant);
+	List<Partnership> findByMerchantId(int idMerchant);
 }

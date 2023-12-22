@@ -1,9 +1,12 @@
 package it.unicam.cs.ids.loyalty.model;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
  
 /**
 * JPA Entity representing a member card.
@@ -16,8 +19,10 @@ public class MemberCard {
     private int id;
  
     private String cardNumber;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "membership_id", nullable = false)
     private Membership membership;
-
  
     // Default constructor required by JPA
     public MemberCard() {
@@ -61,4 +66,11 @@ public class MemberCard {
 	public void setNumero(String numero) {
 		this.cardNumber = numero;
 	}
+	 public Membership getMembership() {
+	        return membership;
+	    }
+
+	    public void setMembership(Membership membership) {
+	        this.membership = membership;
+	    }
 }

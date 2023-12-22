@@ -62,4 +62,12 @@ public class Feedback {
     public void setCustomer(Customer customer) {
         this.writer = customer;
     }
+
+	public Customer getWriter() {
+		return writer;
+	}
+
+	public void setWriter(Customer writer) {
+		this.writer = writer;
+	}
 }

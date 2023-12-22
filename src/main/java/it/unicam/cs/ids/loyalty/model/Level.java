@@ -18,7 +18,7 @@ public class Level {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int uniqueId;
+    private int id;
  
     private String name;
     private String description;
@@ -45,11 +45,11 @@ public class Level {
     }
  
     public int getUniqueId() {
-        return uniqueId;
+        return id;
     }
  
     public void setUniqueId(int uniqueId) {
-        this.uniqueId = uniqueId;
+        this.id = uniqueId;
     }
  
     public String getName() {
