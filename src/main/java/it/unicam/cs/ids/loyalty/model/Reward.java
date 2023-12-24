@@ -1,4 +1,8 @@
 package it.unicam.cs.ids.loyalty.model;
+
+import jakarta.persistence.Entity;
+
+@Entity
 public class Reward extends Benefit {
 
 	private int qtyAvailable;

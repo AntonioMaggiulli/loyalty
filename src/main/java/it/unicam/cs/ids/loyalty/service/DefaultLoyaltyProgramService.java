@@ -9,6 +9,7 @@ import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -79,21 +80,6 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	 *                       program.
 	 * @return The created LoyaltyProgram entity.
 	 */
-	public LoyaltyProgram createLoyaltyProgram(String programName, String description, boolean isCoalition,
-			int merchantId) {
-		LoyaltyProgram loyaltyProgram = new LoyaltyProgram(programName, description, isCoalition);
-		Optional<Merchant> optionalMerchant = merchantRepository.findById(merchantId);
-		Merchant merchant = optionalMerchant
-				.orElseThrow(() -> new EntityNotFoundException("Merchant not found with id: " + merchantId));
-
-		Partnership partnership = new Partnership();
-		partnership.setMerchant(merchant);
-		partnership.setLoyaltyProgram(loyaltyProgram);
-		loyaltyProgram.addPartnership(partnership);
-		LoyaltyProgram createdProgram = loyaltyProgramRepository.save(loyaltyProgram);
-
-		return createdProgram;
-	}
 
 	// spostare questa responsabilità
 	/*
@@ -125,13 +111,14 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		return associatedPrograms;
 	}
 
+	@Transactional
 	public Level createLevel(int loyaltyProgramId, String levelName, String levelDescription) {
 		// Recupera il programma fedeltà
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
 				.orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
 
 		// Crea un nuovo livello
-		 Level newLevel = new Level(levelName, levelDescription, loyaltyProgram);
+		Level newLevel = new Level(levelName, levelDescription, loyaltyProgram);
 
 		// Salva il nuovo livello nel repository
 		Level savedLevel = levelRepository.save(newLevel);
@@ -141,5 +128,15 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		loyaltyProgramRepository.save(loyaltyProgram);
 
 		return savedLevel;
+	}
+
+	@Transactional
+	public List<Level> getLevelsOfLoyaltyProgram(int programId) {
+		// Trova il programma di fedeltà tramite il suo ID
+		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(programId).orElseThrow(
+				() -> new IllegalArgumentException("Programma di fedeltà non trovato con ID: " + programId));
+
+		// Restituisci i livelli associati al programma di fedeltà
+		return loyaltyProgram.getLevels();
 	}
 }
