@@ -11,6 +11,7 @@ import it.unicam.cs.ids.loyalty.model.Partnership;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
 import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
+import jakarta.transaction.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,7 +57,7 @@ public class MerchantDashboard {
 
 			if (selectedMerchant != null) {
 				System.out.println("Merchant selezionato: " + selectedMerchant.getName());
-				displayOptions(selectedMerchant);
+				displayOptions(choice);
 
 			} else {
 				System.out.println("Merchant non trovato. Riprova.");
@@ -70,26 +71,30 @@ public class MerchantDashboard {
 		}
 	}
 
-	private void displayOptions(Merchant merchant) {
+	private void displayOptions(int merchantId) {
 		while (true) {
 			System.out.println("Seleziona un'opzione:");
 			System.out.println("1. Visualizza programma fedeltà");
 			System.out.println("2. Crea nuovo programma fedeltà");
-			System.out.println("3. Aggiungi un Benefit al programma Fedeltà");
+			System.out.println("3. Aderisci ad un Programma fedeltà in coalizione");
+			System.out.println("4. Aggiungi un Benefit al programma Fedeltà");
 			System.out.println("0. Esci");
 
-			int choice = scanner.nextInt();
+			int option = scanner.nextInt();
 			scanner.nextLine();
 
-			switch (choice) {
+			switch (option) {
 			case 1:
-				viewLoyaltyProgram(merchant);
+				viewLoyaltyProgramByMerchant(merchantId);
 				break;
 			case 2:
-				createLoyaltyProgram(merchant);
+				createLoyaltyProgram(merchantId);
 				break;
 			case 3:
-				createBenefit(merchant);
+				joinCoalition(merchantId);
+				break;
+			case 4:
+				createBenefit(merchantId);
 				break;
 			case 0:
 				System.out.println("Arrivederci!");
@@ -101,14 +106,40 @@ public class MerchantDashboard {
 		}
 	}
 
-	private void viewLoyaltyProgram(Merchant merchant) {
+	@Transactional
+	private void joinCoalition(int merchantId) {
+		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+		System.out.println("\n\nAdesione ad una Coalizione per " + merchant.getName() + "\nCoalizioni Disponibili:\n");
 
-		System.out.println("Lista dei programmi fedeltà di " + merchant.getName());
-		merchantService.viewLoyaltyProgramsOfMerchant(merchant.getId());
+		List<LoyaltyProgram> coalitions = loyaltyProgramService.getCoalitions();
+		coalitions.stream()
+				.filter(lp -> lp.getPartnerships().stream().anyMatch(p -> p.getMerchant().getId() != merchantId))
+				.forEach(lp -> System.out.println(lp.getId() + ": " + lp.getProgramName() + "\n"));
+		System.out.print("Inserisci il codice del programma di fedeltà cui vuoi aderire: ");
+		int programId = scanner.nextInt();
+		LoyaltyProgram loyaltyProgram = loyaltyProgramService.getById(programId).get();
+		merchantService.joinCoalition(merchant, loyaltyProgram);
+
 	}
 
-	private void createLoyaltyProgram(Merchant merchant) {
+	private void viewLoyaltyProgramByMerchant(int merchantId) {
+		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+		System.out.println("\n=========================================================\n"
+				+ "Lista dei programmi fedeltà di " + merchant.getName() + ":\n");
+		List<Partnership> partnerships = merchant.getPartnerships();
+		if (partnerships.isEmpty()) {
+			System.out.println("Nessun programma fedeltà associato a questo commerciante.");
+		} else {
+			partnerships.forEach(partnership -> {
+				LoyaltyProgram loyaltyProgram = partnership.getLoyaltyProgram();
+				System.out.println("Codice: " + loyaltyProgram.getId() + ", Nome: " + loyaltyProgram.getProgramName());
+			});
+		}
+		System.out.println("=========================================================\n");
+	}
 
+	private void createLoyaltyProgram(int merchantId) {
+		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
 		System.out.println("Creazione di un nuovo programma fedeltà per " + merchant.getName());
 		System.out.println("Inserisci il nome del programma fedeltà:");
 		String loyaltyProgramName = scanner.nextLine();
@@ -121,7 +152,7 @@ public class MerchantDashboard {
 		scanner.nextLine();
 
 		LoyaltyProgram newProgram = merchantService.createLoyaltyProgram(loyaltyProgramName, loyaltyProgramDescription,
-				coalitionOpen, merchant.getId());
+				coalitionOpen, merchantId);
 		boolean addMoreLevels = true;
 		while (addMoreLevels) {
 
@@ -142,8 +173,9 @@ public class MerchantDashboard {
 
 	}
 
-	private void createBenefit(Merchant merchant) {
-		merchantService.viewLoyaltyProgramsOfMerchant(merchant.getId());
+	private void createBenefit(int merchantId) {
+
+		viewLoyaltyProgramByMerchant(merchantId);
 
 		System.out.print("Inserisci il codice del programma di fedeltà: ");
 		int programId = scanner.nextInt();
@@ -166,11 +198,11 @@ public class MerchantDashboard {
 		int pointsRequired = scanner.nextInt();
 
 		System.out.print("Scegli il tipo di benefit (COUPON, CASHBACK, REWARD, POINTS_REWARD): ");
-		String benefitType = scanner.next();
+		String benefitType = scanner.next().toUpperCase();
 
 		Object[] additionalParams = null;
 
-		switch (benefitType.toUpperCase()) {
+		switch (benefitType) {
 		case "COUPON":
 			System.out.print("Inserisci la data di scadenza del coupon (YYYY-MM-DD): ");
 			String expirationDateString = scanner.next();
@@ -208,7 +240,7 @@ public class MerchantDashboard {
 		}
 
 		Benefit createdBenefit = merchantService.createBenefit(benefitType, benefitName, benefitDescription,
-				pointsRequired, merchant.getId(), programId, levelId, additionalParams);
+				pointsRequired, merchantId, programId, levelId, additionalParams);
 
 		System.out.println("Benefit creato con successo: " + createdBenefit.getName());
 	}

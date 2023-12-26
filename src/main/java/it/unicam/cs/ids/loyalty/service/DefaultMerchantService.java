@@ -9,6 +9,7 @@ import it.unicam.cs.ids.loyalty.model.Partnership;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.LevelRepository;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
@@ -83,18 +84,24 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 		Merchant merchant = optionalMerchant
 				.orElseThrow(() -> new EntityNotFoundException("Merchant not found with id: " + merchantId));
 
-		Partnership partnership = new Partnership();
-		partnership.setMerchant(merchant);
-		partnership.setLoyaltyProgram(loyaltyProgram);
-		LocalDate localDate = LocalDate.now();
-		Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		partnership.setStartDate(date);
+		Partnership partnership = createPartnership(merchant, loyaltyProgram);
 
 		loyaltyProgram.addPartnership(partnership);
 
 		LoyaltyProgram createdProgram = loyaltyProgramRepository.save(loyaltyProgram);
 		partnershipRepository.save(partnership);
 		return createdProgram;
+	}
+
+	@Transactional
+	Partnership createPartnership(Merchant merchant, LoyaltyProgram loyaltyProgram) {
+		Partnership partnership = new Partnership();
+		partnership.setMerchant(merchant);
+		partnership.setLoyaltyProgram(loyaltyProgram);
+		LocalDate localDate = LocalDate.now();
+		Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		partnership.setStartDate(date);
+		return partnership;
 	}
 
 	public Benefit createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
@@ -113,24 +120,11 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 
 	}
 
-	public void viewLoyaltyProgramsOfMerchant(int merchantId) {
-		Merchant merchant = merchantRepository.findById(merchantId)
-				.orElseThrow(() -> new RuntimeException("Merchant not found with ID: " + merchantId));
+	@Transactional
+	public void joinCoalition(Merchant merchant, LoyaltyProgram loyaltyProgram) {
+		Partnership partnership = createPartnership(merchant, loyaltyProgram);
+		partnershipRepository.save(partnership);
 
-		System.out.println("=========================================================\n"
-				+ "Lista dei programmi fedeltà di " + merchant.getName() + ":\n");
-
-		List<Partnership> partnerships = merchant.getPartnerships();
-		if (partnerships.isEmpty()) {
-			System.out.println("Nessun programma di fedeltà associato a questo commerciante.");
-		} else {
-			partnerships.forEach(partnership -> {
-				LoyaltyProgram loyaltyProgram = partnership.getLoyaltyProgram();
-				System.out.println("Codice: " + loyaltyProgram.getId() + ", Nome: " + loyaltyProgram.getProgramName());
-			});
-		}
-
-		System.out.println("=========================================================\n");
 	}
 
 }

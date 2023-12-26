@@ -1,49 +1,48 @@
 package it.unicam.cs.ids.loyalty.model;
- 
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
- 
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
- 
- 
+
 /**
-* Represents a loyalty program offered by Merchants.
-*/
+ * Represents a loyalty program offered by Merchants.
+ */
 @Entity
 public class LoyaltyProgram {
- 
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
- 
+
 	private String programName;
 	private String description;
 	private boolean isCoalition;
- 
+
 	@OneToMany(mappedBy = "loyaltyProgram")
 	private List<Membership> memberships = new ArrayList<>();
- 
+
 	@OneToMany(mappedBy = "loyaltyProgram", fetch = FetchType.EAGER)
 	private List<Level> levels = new ArrayList<>();
- 
-	@OneToMany(mappedBy = "loyaltyProgram")
+
+	@OneToMany(mappedBy = "loyaltyProgram", fetch = FetchType.EAGER)
 	private List<Partnership> partnerships = new ArrayList<>();
- 
+
 	private Date expiringDate;
- 
+
 	/**
 	 * Default constructor.
 	 */
 	public LoyaltyProgram() {
- 
+
 	}
- 
+
 	/**
 	 * Constructs a LoyaltyProgram with the specified details.
 	 *
@@ -57,7 +56,7 @@ public class LoyaltyProgram {
 		this.description = description;
 		this.isCoalition = isCoalition;
 	}
- 
+
 	/**
 	 * Adds a level to the loyalty program's list of levels.
 	 *
@@ -66,7 +65,7 @@ public class LoyaltyProgram {
 	public void addLevel(Level level) {
 		this.levels.add(level);
 	}
- 
+
 	/**
 	 * Adds a membership to the loyalty program's list of memberships.
 	 *
@@ -78,7 +77,7 @@ public class LoyaltyProgram {
 			membership.setLoyaltyProgram(this);
 		}
 	}
- 
+
 	/**
 	 * Adds a partnership to the loyalty program's list of partnerships.
 	 *
@@ -90,7 +89,7 @@ public class LoyaltyProgram {
 			partnership.setLoyaltyProgram(this);
 		}
 	}
- 
+
 	/**
 	 * Gets the description of the loyalty program.
 	 *
@@ -99,7 +98,7 @@ public class LoyaltyProgram {
 	public String getDescription() {
 		return description;
 	}
- 
+
 	/**
 	 * Gets the ID of the loyalty program.
 	 *
@@ -108,7 +107,7 @@ public class LoyaltyProgram {
 	public int getId() {
 		return id;
 	}
- 
+
 	/**
 	 * Gets the list of levels associated with the loyalty program.
 	 *
@@ -117,7 +116,7 @@ public class LoyaltyProgram {
 	public List<Level> getLevels() {
 		return levels;
 	}
- 
+
 	/**
 	 * Gets the list of memberships associated with the loyalty program.
 	 *
@@ -126,7 +125,7 @@ public class LoyaltyProgram {
 	public List<Membership> getMemberships() {
 		return memberships;
 	}
- 
+
 	/**
 	 * Gets the list of partnerships associated with the loyalty program.
 	 *
@@ -135,7 +134,7 @@ public class LoyaltyProgram {
 	public List<Partnership> getPartnerships() {
 		return partnerships;
 	}
- 
+
 	/**
 	 * Gets the name of the loyalty program.
 	 *
@@ -144,7 +143,7 @@ public class LoyaltyProgram {
 	public String getProgramName() {
 		return programName;
 	}
- 
+
 	/**
 	 * Checks if the loyalty program is a coalition of multiple merchants.
 	 *
@@ -153,7 +152,7 @@ public class LoyaltyProgram {
 	public boolean isCoalition() {
 		return isCoalition;
 	}
- 
+
 	/**
 	 * Removes a level from the loyalty program's list of levels.
 	 *
@@ -162,7 +161,7 @@ public class LoyaltyProgram {
 	public void removeLevel(Level level) {
 		this.levels.remove(level);
 	}
- 
+
 	/**
 	 * Removes a membership from the loyalty program's list of memberships.
 	 *
@@ -171,7 +170,7 @@ public class LoyaltyProgram {
 	public void removeMembership(Membership membership) {
 		this.memberships.remove(membership);
 	}
- 
+
 	/**
 	 * Removes a partnership from the loyalty program's list of partnerships.
 	 *
@@ -180,7 +179,7 @@ public class LoyaltyProgram {
 	public void removePartnership(Partnership partnership) {
 		this.partnerships.remove(partnership);
 	}
- 
+
 	/**
 	 * Sets whether the loyalty program is a coalition of multiple merchants.
 	 *
@@ -189,7 +188,7 @@ public class LoyaltyProgram {
 	public void setCoalition(boolean coalition) {
 		isCoalition = coalition;
 	}
- 
+
 	/**
 	 * Sets the description of the loyalty program.
 	 *
@@ -198,7 +197,7 @@ public class LoyaltyProgram {
 	public void setDescription(String description) {
 		this.description = description;
 	}
- 
+
 	/**
 	 * Sets the ID of the loyalty program.
 	 *
@@ -207,7 +206,7 @@ public class LoyaltyProgram {
 	public void setId(int id) {
 		this.id = id;
 	}
- 
+
 	/**
 	 * Sets the list of levels associated with the loyalty program.
 	 *
@@ -216,7 +215,7 @@ public class LoyaltyProgram {
 	public void setLevels(List<Level> levels) {
 		this.levels = levels;
 	}
- 
+
 	/**
 	 * Sets the list of memberships associated with the loyalty program.
 	 *
@@ -225,7 +224,7 @@ public class LoyaltyProgram {
 	public void setMemberships(List<Membership> memberships) {
 		this.memberships = memberships;
 	}
- 
+
 	/**
 	 * Sets the list of partnerships associated with the loyalty program.
 	 *
@@ -234,7 +233,7 @@ public class LoyaltyProgram {
 	public void setPartnerships(List<Partnership> partnerships) {
 		this.partnerships = partnerships;
 	}
- 
+
 	/**
 	 * Sets the name of the loyalty program.
 	 *
@@ -243,5 +242,5 @@ public class LoyaltyProgram {
 	public void setProgramName(String programName) {
 		this.programName = programName;
 	}
- 
+
 }
