@@ -5,7 +5,8 @@ import jakarta.persistence.Entity;
 @Entity
 public class Cashback extends Benefit {
 
-    private double cashBackRate;
+    private double cashBackRate=0.0;
+    private double minSpent=0.0;
 
     public Cashback() {
         super();

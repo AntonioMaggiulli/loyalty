@@ -7,8 +7,8 @@ import jakarta.persistence.Table;
 @Table(name = "points_reward")
 public class PointsReward extends Benefit {
 
-	private int earnsPoints;
-	private double moneySpent;
+	private int earnsPoints=1;
+	private double moneySpent=1.0;
 
 	public PointsReward() {
 	

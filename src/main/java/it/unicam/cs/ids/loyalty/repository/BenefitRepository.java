@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
+import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 
@@ -30,5 +31,7 @@ public interface BenefitRepository extends JpaRepository<Benefit, Integer> {
      * @return List of Benefit entities associated with the specified loyalty program.
      */
     List<Benefit> findByLoyaltyProgram(LoyaltyProgram loyaltyProgram);
+
+	List<Benefit> findByAssociatedLevel(Level level);
 }
 

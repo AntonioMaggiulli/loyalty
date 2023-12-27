@@ -44,7 +44,7 @@ public abstract class Benefit {
 	@ManyToOne
 	@JoinColumn(name = "associated_level_id")
 	private Level associatedLevel;
-	private int pointsRequired;
+	private int pointsRequired=0;
 	private boolean exclusiveRequired;
 
 	/**

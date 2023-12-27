@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 @Component
@@ -78,6 +79,7 @@ public class MerchantDashboard {
 			System.out.println("2. Crea nuovo programma fedeltà");
 			System.out.println("3. Aderisci ad un Programma fedeltà in coalizione");
 			System.out.println("4. Aggiungi un Benefit al programma Fedeltà");
+			System.out.println("5. Visualizza Benefit di un programma Fedeltà");
 			System.out.println("0. Esci");
 
 			int option = scanner.nextInt();
@@ -96,6 +98,9 @@ public class MerchantDashboard {
 			case 4:
 				createBenefit(merchantId);
 				break;
+			case 5:
+				viewBenefit(merchantId);
+				break;
 			case 0:
 				System.out.println("Arrivederci!");
 				System.exit(0);
@@ -104,6 +109,33 @@ public class MerchantDashboard {
 				break;
 			}
 		}
+	}
+
+	private void viewBenefit(int merchantId) {
+		viewLoyaltyProgramByMerchant(merchantId);
+		System.out.print("Inserisci il codice del programma di fedeltà: ");
+		int programId = scanner.nextInt();
+
+		LoyaltyProgram program = loyaltyProgramService.getById(programId)
+				.orElseThrow(() -> new RuntimeException("Programma di fedeltà non trovato."));
+
+// Utilizza il metodo del servizio per ottenere i benefit per ogni livello
+		Map<Integer, List<Benefit>> benefitsByLevel = loyaltyProgramService.getBenefitsByLoyaltyProgram(programId);
+
+		for (Level level : program.getLevels()) {
+			System.out.println("\nLivello: " + level.getName());
+			List<Benefit> benefits = benefitsByLevel.get(level.getId());
+			if (benefits.isEmpty()) {
+				System.out.println("  Nessun benefit disponibile per questo livello.");
+			} else {
+				for (Benefit benefit : benefits) {
+					System.out.println("  Punti necessari: " +benefit.getPointsRequired()+
+							" - Nome:"+ benefit.getName() + " - " + benefit.getDescription());
+					// Qui puoi visualizzare ulteriori dettagli se necessario
+				}
+			}
+		}
+
 	}
 
 	@Transactional
@@ -218,8 +250,8 @@ public class MerchantDashboard {
 			additionalParams = new Object[] { expirationDate };
 			break;
 		case "CASHBACK":
-			System.out.print("Inserisci il tasso di cashback (es. 0.1 per 10%): ");
-			double cashBackRate = scanner.nextDouble();
+			System.out.print("Inserisci il tasso di cashback (es. 12,5 per 12,5%): ");
+			double cashBackRate = scanner.nextDouble()/100;
 			additionalParams = new Object[] { cashBackRate };
 			break;
 		case "REWARD":
@@ -228,9 +260,9 @@ public class MerchantDashboard {
 			additionalParams = new Object[] { quantity };
 			break;
 		case "POINTS_REWARD":
-			System.out.print("Inserisci il numero di punti guadagnati per ogni euro speso: ");
+			System.out.print("Quanti punti verranno guadagnati?: ");
 			int points = scanner.nextInt();
-			System.out.print("Inserisci l'importo di denaro speso per guadagnare i punti: ");
+			System.out.print("Per quale importo speso?: ");
 			double moneySpent = scanner.nextDouble();
 			additionalParams = new Object[] { points, moneySpent };
 			break;

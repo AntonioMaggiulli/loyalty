@@ -38,7 +38,7 @@ public class LevelController {
     @PutMapping("/{id}")
     public Level updateLevel(@PathVariable int id, @RequestBody Level level) {
         if (levelService.getById(id).isPresent()) {
-            level.setUniqueId(id);
+            level.setId(id);
             return levelService.update(level);
         } else {
             throw new EntityNotFoundException("Level not found with id: " + id);

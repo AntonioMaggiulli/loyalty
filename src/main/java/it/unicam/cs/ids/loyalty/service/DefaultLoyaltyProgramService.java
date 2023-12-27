@@ -1,9 +1,11 @@
 package it.unicam.cs.ids.loyalty.service;
 
+import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Partnership;
+import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.LevelRepository;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
@@ -15,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -28,15 +32,17 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	private final MerchantRepository merchantRepository;
 	private final PartnershipRepository partnershipRepository;
 	private final LevelRepository levelRepository;
+	private final BenefitRepository benefitRepository;
 
 	@Autowired
 	public DefaultLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository,
 			MerchantRepository merchantRepository, PartnershipRepository partnershipRepository,
-			LevelRepository levelRepository) {
+			LevelRepository levelRepository, BenefitRepository benefitRepository) {
 		this.loyaltyProgramRepository = loyaltyProgramRepository;
 		this.merchantRepository = merchantRepository;
 		this.partnershipRepository = partnershipRepository;
 		this.levelRepository = levelRepository;
+		this.benefitRepository = benefitRepository;
 	}
 
 	@Override
@@ -139,4 +145,18 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		// Restituisci i livelli associati al programma di fedeltà
 		return loyaltyProgram.getLevels();
 	}
+	public Map<Integer, List<Benefit>> getBenefitsByLoyaltyProgram(int programId) {
+        Map<Integer, List<Benefit>> benefitsByLevel = new HashMap<>();
+        
+        LoyaltyProgram program = this.getById(programId)
+                .orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato con ID: " + programId));
+        
+        List<Level> levels = program.getLevels();
+        for (Level level : levels) {
+            List<Benefit> benefits = benefitRepository.findByAssociatedLevel(level);
+            benefitsByLevel.put(level.getId(), benefits);
+        }
+        
+        return benefitsByLevel;
+    }
 }

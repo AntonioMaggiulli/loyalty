@@ -6,7 +6,25 @@ import java.util.Date;
 @Entity
 public class Coupon extends Benefit {
 
-    private Date expiringDate;
+    private String code;
+    private String conditionString;
+    public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public String getConditionString() {
+		return conditionString;
+	}
+
+	public void setConditionString(String conditionString) {
+		this.conditionString = conditionString;
+	}
+
+	private Date expiringDate;
 
     public Coupon() {
         super();
