@@ -23,6 +23,7 @@ public class Level {
 
 	private String name;
 	private String description;
+	private int pointsThreshold; // Soglia minima di punti per passare a questo livello
 
 	@ManyToOne
 	@JoinColumn(name = "loyalty_program_id")
@@ -40,10 +41,11 @@ public class Level {
 	 * @param name        The name of the level.
 	 * @param description The description of the level.
 	 */
-	public Level(String name, String description, LoyaltyProgram loyaltyProgram) {
+	public Level(String name, String description, LoyaltyProgram loyaltyProgram, int threshold) {
 		this.name = name;
 		this.description = description;
 		this.loyaltyProgram = loyaltyProgram;
+		this.pointsThreshold = threshold;
 	}
 
 	public String getName() {
@@ -67,7 +69,19 @@ public class Level {
 	}
 
 	public void setId(int id) {
-		this.id=id;
-		
+		this.id = id;
+
+	}
+
+	public int getPointsThreshold() {
+		return pointsThreshold;
+	}
+
+	public void setPointsThreshold(int pointsThreshold) {
+		this.pointsThreshold = pointsThreshold;
+	}
+
+	public LoyaltyProgram getLoyaltyProgram() {
+		return loyaltyProgram;
 	}
 }

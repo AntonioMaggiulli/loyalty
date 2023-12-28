@@ -1,13 +1,20 @@
 package it.unicam.cs.ids.loyalty.service;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
+import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
+import it.unicam.cs.ids.loyalty.model.MemberCard;
+import it.unicam.cs.ids.loyalty.model.Membership;
+import it.unicam.cs.ids.loyalty.model.MembershipAccount;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Partnership;
 import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
+import it.unicam.cs.ids.loyalty.repository.CustomerRepository;
 import it.unicam.cs.ids.loyalty.repository.LevelRepository;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
+import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
+import it.unicam.cs.ids.loyalty.repository.MembershipRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,10 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of the CrudService for LoyaltyProgram entities.
@@ -29,20 +38,25 @@ import java.util.Optional;
 public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram> {
 
 	private final LoyaltyProgramRepository loyaltyProgramRepository;
-	private final MerchantRepository merchantRepository;
+	private final CustomerRepository customerRepository;
 	private final PartnershipRepository partnershipRepository;
+	private final MembershipRepository membershipRepository;
 	private final LevelRepository levelRepository;
 	private final BenefitRepository benefitRepository;
+	private final MemberCardRepository memberCardRepository;
 
 	@Autowired
 	public DefaultLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository,
-			MerchantRepository merchantRepository, PartnershipRepository partnershipRepository,
-			LevelRepository levelRepository, BenefitRepository benefitRepository) {
+			CustomerRepository customerRepository, PartnershipRepository partnershipRepository,
+			LevelRepository levelRepository, BenefitRepository benefitRepository,
+			MembershipRepository membershipRepository, MemberCardRepository memberCardRepository) {
 		this.loyaltyProgramRepository = loyaltyProgramRepository;
-		this.merchantRepository = merchantRepository;
+		this.customerRepository = customerRepository;
 		this.partnershipRepository = partnershipRepository;
 		this.levelRepository = levelRepository;
 		this.benefitRepository = benefitRepository;
+		this.membershipRepository = membershipRepository;
+		this.memberCardRepository = memberCardRepository;
 	}
 
 	@Override
@@ -117,19 +131,58 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		return associatedPrograms;
 	}
 
+	public List<LoyaltyProgram> getAvailableCustomerProgram(int idCustomer) {
+
+		// Recupera tutti i programmi fedeltà disponibili
+		List<LoyaltyProgram> allPrograms = loyaltyProgramRepository.findAll();
+
+		// Recupera le membership del cliente per ottenere i programmi a cui è già
+		// iscritto
+		List<LoyaltyProgram> subscribedPrograms = membershipRepository.findByCustomerId(idCustomer).stream()
+				.map(Membership::getLoyaltyProgram).collect(Collectors.toList());
+
+		// Filtra i programmi fedeltà, escludendo quelli a cui il cliente è già iscritto
+		return allPrograms.stream().filter(program -> !subscribedPrograms.contains(program))
+				.collect(Collectors.toList());
+	}
+
+	public void joinLoyaltyProgram(int customerId, int loyaltyProgramId) {
+
+		Customer customer = customerRepository.findById(customerId).get();
+
+		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId).get();
+
+		List<Level> sortedLevels = loyaltyProgram.getLevels().stream()
+				.sorted(Comparator.comparingInt(Level::getPointsThreshold)).collect(Collectors.toList());
+		Level initialLevel = sortedLevels.get(0);
+
+		// Creare una nuova Membership
+		Membership newMembership = new Membership(customer, loyaltyProgram);
+		newMembership.setCurrentLevel(initialLevel);
+
+		// Creare account e card
+		MembershipAccount newMembershipAccount = new MembershipAccount(newMembership);
+		newMembershipAccount.setMembership(newMembership);
+		newMembership.setMembershipAccount(newMembershipAccount);
+
+		membershipRepository.save(newMembership);
+
+		MemberCard newMemberCard = new MemberCard(newMembership);
+
+		memberCardRepository.save(newMemberCard);
+	}
+
 	@Transactional
-	public Level createLevel(int loyaltyProgramId, String levelName, String levelDescription) {
-		// Recupera il programma fedeltà
+	public Level createLevel(int loyaltyProgramId, String levelName, String levelDescription, int threshold) {
+
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
 				.orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
 
 		// Crea un nuovo livello
-		Level newLevel = new Level(levelName, levelDescription, loyaltyProgram);
+		Level newLevel = new Level(levelName, levelDescription, loyaltyProgram, threshold);
 
-		// Salva il nuovo livello nel repository
 		Level savedLevel = levelRepository.save(newLevel);
 
-		// Aggiungi il livello alla lista dei livelli del programma fedeltà
 		loyaltyProgram.getLevels().add(savedLevel);
 		loyaltyProgramRepository.save(loyaltyProgram);
 
@@ -143,20 +196,23 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 				() -> new IllegalArgumentException("Programma di fedeltà non trovato con ID: " + programId));
 
 		// Restituisci i livelli associati al programma di fedeltà
-		return loyaltyProgram.getLevels();
+		return loyaltyProgram.getLevels().stream()
+                .sorted(Comparator.comparingInt(Level::getPointsThreshold))
+                .collect(Collectors.toList());
 	}
+
 	public Map<Integer, List<Benefit>> getBenefitsByLoyaltyProgram(int programId) {
-        Map<Integer, List<Benefit>> benefitsByLevel = new HashMap<>();
-        
-        LoyaltyProgram program = this.getById(programId)
-                .orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato con ID: " + programId));
-        
-        List<Level> levels = program.getLevels();
-        for (Level level : levels) {
-            List<Benefit> benefits = benefitRepository.findByAssociatedLevel(level);
-            benefitsByLevel.put(level.getId(), benefits);
-        }
-        
-        return benefitsByLevel;
-    }
+		Map<Integer, List<Benefit>> benefitsByLevel = new HashMap<>();
+
+		LoyaltyProgram program = this.getById(programId)
+				.orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato con ID: " + programId));
+
+		List<Level> levels = program.getLevels();
+		for (Level level : levels) {
+			List<Benefit> benefits = benefitRepository.findByAssociatedLevel(level);
+			benefitsByLevel.put(level.getId(), benefits);
+		}
+
+		return benefitsByLevel;
+	}
 }

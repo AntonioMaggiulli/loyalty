@@ -87,7 +87,7 @@ public class MerchantDashboard {
 
 			switch (option) {
 			case 1:
-				viewLoyaltyProgramByMerchant(merchantId);
+				viewMerchantLoyaltyProgram(merchantId);
 				break;
 			case 2:
 				createLoyaltyProgram(merchantId);
@@ -112,7 +112,7 @@ public class MerchantDashboard {
 	}
 
 	private void viewBenefit(int merchantId) {
-		viewLoyaltyProgramByMerchant(merchantId);
+		viewMerchantLoyaltyProgram(merchantId);
 		System.out.print("Inserisci il codice del programma di fedeltà: ");
 		int programId = scanner.nextInt();
 
@@ -154,7 +154,7 @@ public class MerchantDashboard {
 
 	}
 
-	private void viewLoyaltyProgramByMerchant(int merchantId) {
+	private void viewMerchantLoyaltyProgram(int merchantId) {
 		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
 		System.out.println("\n=========================================================\n"
 				+ "Lista dei programmi fedeltà di " + merchant.getName() + ":\n");
@@ -164,7 +164,7 @@ public class MerchantDashboard {
 		} else {
 			partnerships.forEach(partnership -> {
 				LoyaltyProgram loyaltyProgram = partnership.getLoyaltyProgram();
-				System.out.println("Codice: " + loyaltyProgram.getId() + ", Nome: " + loyaltyProgram.getProgramName());
+				System.out.println("CODICE: " + loyaltyProgram.getId() + ", Nome: " + loyaltyProgram.getProgramName());
 			});
 		}
 		System.out.println("=========================================================\n");
@@ -193,8 +193,11 @@ public class MerchantDashboard {
 
 			System.out.println("Definisci una breve descrizione per il livello:");
 			String levelDescription = scanner.nextLine();
+			
+			System.out.println("Definisci una soglia minima per questo livello:");
+			int levelThreshold = scanner.nextInt();
 
-			loyaltyProgramService.createLevel(newProgram.getId(), levelName, levelDescription);
+			loyaltyProgramService.createLevel(newProgram.getId(), levelName, levelDescription, levelThreshold);
 
 			System.out.println("Vuoi aggiungere un altro livello? (true/false):");
 			addMoreLevels = scanner.nextBoolean();
@@ -207,7 +210,7 @@ public class MerchantDashboard {
 
 	private void createBenefit(int merchantId) {
 
-		viewLoyaltyProgramByMerchant(merchantId);
+		viewMerchantLoyaltyProgram(merchantId);
 
 		System.out.print("Inserisci il codice del programma di fedeltà: ");
 		int programId = scanner.nextInt();
