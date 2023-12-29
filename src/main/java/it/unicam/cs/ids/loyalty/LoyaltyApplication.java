@@ -24,7 +24,10 @@ public class LoyaltyApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		System.out.println("Benvenuti nella piattaforma fedelta'");
+		System.out.println("\n\n=========================================================\n"
+				+ "Benvenuti nella DEMO piattaforma fedelta'\n"
+				+ "In questa DEMO per semplicità il login è soltanto simulato.\n"
+				+ "Per tutti i tipi di utenti registrati sarà sufficente selezionare un utente attraverso il suo codice\n\n");
 		Scanner scanner = new Scanner(System.in);
 
 		while (true) {

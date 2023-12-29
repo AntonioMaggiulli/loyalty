@@ -156,18 +156,15 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 				.sorted(Comparator.comparingInt(Level::getPointsThreshold)).collect(Collectors.toList());
 		Level initialLevel = sortedLevels.get(0);
 
-		// Creare una nuova Membership
-		Membership newMembership = new Membership(customer, loyaltyProgram);
-		newMembership.setCurrentLevel(initialLevel);
+		Membership membership = loyaltyProgram.enrollCustomer(customer, initialLevel);
 
 		// Creare account e card
-		MembershipAccount newMembershipAccount = new MembershipAccount(newMembership);
-		newMembershipAccount.setMembership(newMembership);
-		newMembership.setMembershipAccount(newMembershipAccount);
+		MembershipAccount newMembershipAccount = new MembershipAccount(membership);
+		membership.setMembershipAccount(newMembershipAccount);
 
-		membershipRepository.save(newMembership);
+		membershipRepository.save(membership);
 
-		MemberCard newMemberCard = new MemberCard(newMembership);
+		MemberCard newMemberCard = new MemberCard(membership);
 
 		memberCardRepository.save(newMemberCard);
 	}
@@ -196,9 +193,8 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 				() -> new IllegalArgumentException("Programma di fedeltà non trovato con ID: " + programId));
 
 		// Restituisci i livelli associati al programma di fedeltà
-		return loyaltyProgram.getLevels().stream()
-                .sorted(Comparator.comparingInt(Level::getPointsThreshold))
-                .collect(Collectors.toList());
+		return loyaltyProgram.getLevels().stream().sorted(Comparator.comparingInt(Level::getPointsThreshold))
+				.collect(Collectors.toList());
 	}
 
 	public Map<Integer, List<Benefit>> getBenefitsByLoyaltyProgram(int programId) {

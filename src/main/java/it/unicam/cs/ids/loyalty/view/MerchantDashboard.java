@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
+import it.unicam.cs.ids.loyalty.model.Employee;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Partnership;
+import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
 import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
@@ -27,13 +29,13 @@ public class MerchantDashboard {
 	private DefaultMerchantService merchantService;
 	private DefaultLoyaltyProgramService loyaltyProgramService;
 	private Scanner scanner = new Scanner(System.in);
-	private List<Partnership> partnerships;
 
 	@Autowired
-	public MerchantDashboard(MerchantRepository merchantRepository, DefaultMerchantService merchantService,
-			DefaultLoyaltyProgramService loyaltyProgramService) {
-		this.merchantService = merchantService;
+	public MerchantDashboard(MerchantRepository merchantRepository, EmployeeRepository employeeRepository,
+			DefaultMerchantService merchantService, DefaultLoyaltyProgramService loyaltyProgramService) {
 		this.merchantRepository = merchantRepository;
+		this.merchantService = merchantService;
+
 		this.loyaltyProgramService = loyaltyProgramService;
 	}
 
@@ -80,6 +82,7 @@ public class MerchantDashboard {
 			System.out.println("3. Aderisci ad un Programma fedeltà in coalizione");
 			System.out.println("4. Aggiungi un Benefit al programma Fedeltà");
 			System.out.println("5. Visualizza Benefit di un programma Fedeltà");
+			System.out.println("6. Crea utenza per dipendente");
 			System.out.println("0. Esci");
 
 			int option = scanner.nextInt();
@@ -100,6 +103,9 @@ public class MerchantDashboard {
 				break;
 			case 5:
 				viewBenefit(merchantId);
+				break;
+			case 6:
+				createEmployee(merchantId);
 				break;
 			case 0:
 				System.out.println("Arrivederci!");
@@ -129,8 +135,8 @@ public class MerchantDashboard {
 				System.out.println("  Nessun benefit disponibile per questo livello.");
 			} else {
 				for (Benefit benefit : benefits) {
-					System.out.println("  Punti necessari: " +benefit.getPointsRequired()+
-							" - Nome:"+ benefit.getName() + " - " + benefit.getDescription());
+					System.out.println("  Punti necessari: " + benefit.getPointsRequired() + " - Nome:"
+							+ benefit.getName() + " - " + benefit.getDescription());
 					// Qui puoi visualizzare ulteriori dettagli se necessario
 				}
 			}
@@ -193,7 +199,7 @@ public class MerchantDashboard {
 
 			System.out.println("Definisci una breve descrizione per il livello:");
 			String levelDescription = scanner.nextLine();
-			
+
 			System.out.println("Definisci una soglia minima per questo livello:");
 			int levelThreshold = scanner.nextInt();
 
@@ -254,7 +260,7 @@ public class MerchantDashboard {
 			break;
 		case "CASHBACK":
 			System.out.print("Inserisci il tasso di cashback (es. 12,5 per 12,5%): ");
-			double cashBackRate = scanner.nextDouble()/100;
+			double cashBackRate = scanner.nextDouble() / 100;
 			additionalParams = new Object[] { cashBackRate };
 			break;
 		case "REWARD":
@@ -279,5 +285,20 @@ public class MerchantDashboard {
 
 		System.out.println("Benefit creato con successo: " + createdBenefit.getName());
 	}
+	 public void createEmployee(int merchantId) {
+	        System.out.println("Creazione di un nuovo account dipendente.");
 
+	        System.out.print("Inserisci il nome del dipendente: ");
+	        String name = scanner.nextLine();
+
+	        System.out.print("Inserisci la matricola del dipendente: ");
+	        String matricola = scanner.nextLine();
+	        String username="user";
+	        String password="password";
+
+
+	        merchantService.createNewEmployee(merchantId,name,matricola,username,password);
+
+	        System.out.println("Dipendente creato con successo: " + name);
+	    }
 }

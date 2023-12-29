@@ -7,6 +7,7 @@ import it.unicam.cs.ids.loyalty.model.Membership;
 import it.unicam.cs.ids.loyalty.repository.CustomerRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultCustomerService;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
+import it.unicam.cs.ids.loyalty.util.ReferralCodeGenerator;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ public class CustomerDashboard {
 
 	private void displayCustomerList(List<Customer> customers) {
 		for (Customer customer : customers) {
-			System.out.println(customer.getId() + ". " + customer.getCognome());
+			System.out.println(customer.getId() + ". " + customer.getCognome()+" "+customer.getNome());
 		}
 	}
 
@@ -149,14 +150,17 @@ public class CustomerDashboard {
 		System.out.print("Inserisci il codice fiscale del cliente: ");
 		String codiceFiscale = scanner.nextLine();
 
-		System.out.print("Inserisci l'email del cliente: ");
-		String email = scanner.nextLine();
-
-		System.out.print("Inserisci il telefono del cliente: ");
-		String telefono = scanner.nextLine();
-
-		System.out.print("Inserisci l'indirizzo del cliente: ");
-		String indirizzo = scanner.nextLine();
+		System.out.println("altri campi non utili per la demo vengono omessi e sono stati commentati nel codice");
+		/*
+		 * System.out.print("Inserisci l'email del cliente: "); String email =
+		 * scanner.nextLine();
+		 * 
+		 * System.out.print("Inserisci il telefono del cliente: "); String telefono =
+		 * scanner.nextLine();
+		 * 
+		 * System.out.print("Inserisci l'indirizzo del cliente: "); String indirizzo =
+		 * scanner.nextLine();
+		 */
 
 		System.out.print("Inserisci la data di nascita del cliente (dd/MM/yyyy): ");
 		Date dateOfBirth = null;
@@ -165,20 +169,19 @@ public class CustomerDashboard {
 		} catch (ParseException e) {
 			System.out.println("Formato data di nascita non valido. Utilizzare il formato 'dd/MM/yyyy'.");
 		}
-
-		System.out.print("Inserisci il codice di riferimento del cliente: ");
-		String referralCode = scanner.nextLine();
+		String codiceAmico = ReferralCodeGenerator.generateReferralCode();
 
 		Customer newCustomer = new Customer();
 		newCustomer.setCognome(cognome);
 		newCustomer.setNome(nome);
 		newCustomer.setCodiceFiscale(codiceFiscale);
-		newCustomer.setEmail(email);
-		newCustomer.setTelefono(telefono);
-		newCustomer.setIndirizzo(indirizzo);
+		/*
+		 * newCustomer.setEmail(email); newCustomer.setTelefono(telefono);
+		 * newCustomer.setIndirizzo(indirizzo);
+		 */
 		newCustomer.setDateOfBirth(dateOfBirth);
-		newCustomer.setReferralCodeString(referralCode);
-
+		newCustomer.setReferralCodeString(codiceAmico);
+		System.out.println("il tuo codice per la campagna \"presenta un Amico\" è " + codiceAmico);
 		return customerRepository.save(newCustomer);
 
 	}

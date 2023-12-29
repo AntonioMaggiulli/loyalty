@@ -2,6 +2,7 @@ package it.unicam.cs.ids.loyalty.service;
 
 import it.unicam.cs.ids.loyalty.factories.BenefitFactory;
 import it.unicam.cs.ids.loyalty.model.Benefit;
+import it.unicam.cs.ids.loyalty.model.Employee;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
@@ -11,6 +12,7 @@ import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
+import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
 import it.unicam.cs.ids.loyalty.repository.LevelRepository;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,8 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 
 	@Autowired
 	private PartnershipRepository partnershipRepository;
-
+	@Autowired
+	private EmployeeRepository employeeRepository;
 	@Autowired
 	private LoyaltyProgramRepository loyaltyProgramRepository;
 	@Autowired
@@ -125,6 +128,19 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 		Partnership partnership = createPartnership(merchant, loyaltyProgram);
 		partnershipRepository.save(partnership);
 
+	}
+
+	public void createNewEmployee(int merchantId, String name, String matricola, String username, String password ) {
+        
+		Employee newEmployee = new Employee(name,matricola,username,password);
+
+        Merchant merchant=merchantRepository.findById(merchantId).orElse(null);
+        newEmployee.setMerchant(merchant);
+        merchant.getEmployees().add(newEmployee);
+        employeeRepository.save(newEmployee);
+        merchantRepository.save(merchant);
+        
+		
 	}
 
 }

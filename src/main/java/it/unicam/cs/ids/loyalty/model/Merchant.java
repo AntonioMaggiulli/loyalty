@@ -24,6 +24,9 @@ public class Merchant {
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "merchant")
 	private List<Partnership> partnerships = new ArrayList<>();
 
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "merchant")
+	private List<Employee> employees = new ArrayList<>();
+
 	/**
 	 * Default constructor for JPA.
 	 */
@@ -68,6 +71,14 @@ public class Merchant {
 		return description;
 	}
 
+	public List<Employee> getEmployees() {
+		return employees;
+	}
+
+	public void setEmployees(List<Employee> employees) {
+		this.employees = employees;
+	}
+
 	/**
 	 * Returns the list of partnerships associated with the merchant.
 	 *
@@ -109,5 +120,15 @@ public class Merchant {
 
 	public void setPartnerships(List<Partnership> partnerships) {
 		this.partnerships = partnerships;
+	}
+
+	public void addEmployee(Employee employee) {
+		employees.add(employee);
+		employee.setMerchant(this);
+	}
+
+	public void removeEmployee(Employee employee) {
+		employees.remove(employee);
+		employee.setMerchant(null);
 	}
 }

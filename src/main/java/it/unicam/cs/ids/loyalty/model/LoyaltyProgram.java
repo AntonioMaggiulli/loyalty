@@ -243,4 +243,9 @@ public class LoyaltyProgram {
 		this.programName = programName;
 	}
 
+	public Membership enrollCustomer(Customer customer, Level level) {
+		Membership newMembership = new Membership(customer, this);
+		newMembership.setCurrentLevel(level);
+		return newMembership;
+	}
 }
