@@ -45,6 +45,9 @@ public class LoyaltyApplication implements CommandLineRunner {
 			case 1:
 				merchantDashboard.login();
 				break;
+			case 2:
+				merchantDashboard.insertMerchant();
+				break;
 			case 3:
 				customerDashboard.login();
 				break;

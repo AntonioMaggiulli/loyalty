@@ -301,4 +301,13 @@ public class MerchantDashboard {
 
 	        System.out.println("Dipendente creato con successo: " + name);
 	    }
-}
+	 public Merchant insertMerchant(){
+		 System.out.print("inserisci il nome dell'azienda");
+		 String name = scanner.nextLine();
+		 System.out.print("inserisci la descrizione");
+		 String description = scanner.nextLine();
+		 Merchant newMerchant=new Merchant(name, description);
+		 System.out.println("Mechant creato con successo");
+		 return merchantRepository.save(newMerchant);
+		 }
+	 }
