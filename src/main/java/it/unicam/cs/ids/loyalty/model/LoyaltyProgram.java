@@ -25,7 +25,7 @@ public class LoyaltyProgram {
 	private String description;
 	private boolean isCoalition;
 
-	@OneToMany(mappedBy = "loyaltyProgram")
+	@OneToMany(mappedBy = "loyaltyProgram", fetch = FetchType.EAGER)
 	private List<Membership> memberships = new ArrayList<>();
 
 	@OneToMany(mappedBy = "loyaltyProgram", fetch = FetchType.EAGER)

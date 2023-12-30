@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -107,20 +108,25 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 		return partnership;
 	}
 
-	public Benefit createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
+	public void createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
 			int loyaltyProgramId, int levelId, Object... additionalParams) {
 		Merchant offeringMerchant = merchantRepository.findById(merchantId)
 				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
 				.orElseThrow(() -> new IllegalArgumentException("Programma Fedeltà non trovato."));
-		Level associatedLevel = levelRepository.findById(levelId)
-				.orElseThrow(() -> new IllegalArgumentException("Livello non trovato."));
+		List<Level> associatedLevel = new ArrayList<Level>();
+		if (levelId == 0) {
 
-		Benefit benefit = BenefitFactory.createBenefit(type, name, description, pointsRequired, offeringMerchant,
-				loyaltyProgram, associatedLevel, additionalParams);
+			associatedLevel.addAll(loyaltyProgram.getLevels());
+		} else
+			associatedLevel.add(levelRepository.findById(levelId).get());
 
-		return benefitRepository.save(benefit);
+		for (Level level : associatedLevel) {
+			Benefit benefit = BenefitFactory.createBenefit(type, name, description, pointsRequired, offeringMerchant,
+					loyaltyProgram, level, additionalParams);
 
+			benefitRepository.save(benefit);
+		}
 	}
 
 	@Transactional
@@ -130,17 +136,16 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 
 	}
 
-	public void createNewEmployee(int merchantId, String name, String matricola, String username, String password ) {
-        
-		Employee newEmployee = new Employee(name,matricola,username,password);
+	public void createNewEmployee(int merchantId, String name, String matricola, String username, String password) {
 
-        Merchant merchant=merchantRepository.findById(merchantId).orElse(null);
-        newEmployee.setMerchant(merchant);
-        merchant.getEmployees().add(newEmployee);
-        employeeRepository.save(newEmployee);
-        merchantRepository.save(merchant);
-        
-		
+		Employee newEmployee = new Employee(name, matricola, username, password);
+
+		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+		newEmployee.setMerchant(merchant);
+		merchant.getEmployees().add(newEmployee);
+		employeeRepository.save(newEmployee);
+		merchantRepository.save(merchant);
+
 	}
 
 }

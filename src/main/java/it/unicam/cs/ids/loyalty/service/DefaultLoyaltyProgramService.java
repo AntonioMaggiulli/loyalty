@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -91,32 +92,6 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		return loyaltyProgramRepository.save(loyaltyProgram);
 	}
 
-	/**
-	 * Creates a new LoyaltyProgram entity and associates it with the specified
-	 * merchant.
-	 *
-	 * @param loyaltyProgram The LoyaltyProgram entity to create.
-	 * @param merchantId     The ID of the merchant to associate with the loyalty
-	 *                       program.
-	 * @return The created LoyaltyProgram entity.
-	 */
-
-	// spostare questa responsabilità
-	/*
-	 * public void addMerchantToProgram(int programId, int merchantId) {
-	 * Optional<LoyaltyProgram> loyaltyProgramOptional =
-	 * loyaltyProgramRepository.findById(programId); Optional<Merchant>
-	 * merchantOptional = merchantRepository.findById(merchantId);
-	 * 
-	 * if (loyaltyProgramOptional.isPresent() && merchantOptional.isPresent()) {
-	 * LoyaltyProgram loyaltyProgram = loyaltyProgramOptional.get(); Merchant
-	 * merchant = merchantOptional.get();
-	 * 
-	 * loyaltyProgram.addMerchant(merchant);
-	 * loyaltyProgramRepository.save(loyaltyProgram); } else { throw new
-	 * IllegalArgumentException("Programma fedeltà o azienda non trovati."); } }
-	 */
-
 	public List<LoyaltyProgram> getCoalitions() {
 		return loyaltyProgramRepository.findByIsCoalition(true);
 	}
@@ -167,6 +142,10 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		MemberCard newMemberCard = new MemberCard(membership);
 
 		memberCardRepository.save(newMemberCard);
+		newMemberCard.SetCardNumber();
+		memberCardRepository.save(newMemberCard);
+		membership.setMemberCard(newMemberCard);
+		membershipRepository.save(membership);
 	}
 
 	@Transactional
@@ -211,4 +190,41 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 		return benefitsByLevel;
 	}
+
+	public Map<LoyaltyProgram, List<Membership>> getCustomersBySurnameForMerchantPrograms(String surname,
+			int merchantId) {
+
+		List<LoyaltyProgram> merchantLoyaltyPrograms = loyaltyProgramRepository.findByMerchantId(merchantId);
+		Map<LoyaltyProgram, List<Membership>> programCustomerMap = new HashMap<>();
+
+		for (LoyaltyProgram program : merchantLoyaltyPrograms) {
+			List<Membership> memberships = program.getMemberships().stream()
+					.filter(membership -> membership.getCustomer().getCognome().equalsIgnoreCase(surname))
+					.collect(Collectors.toList());
+			programCustomerMap.put(program, memberships);
+		}
+
+		return programCustomerMap;
+	}
+
+	public Map<LoyaltyProgram, List<Membership>> getCustomerByTaxCodeForMerchantPrograms(String taxCode,int merchantId) {
+		List<LoyaltyProgram> merchantLoyaltyPrograms = loyaltyProgramRepository.findByMerchantId(merchantId);
+
+		Map<LoyaltyProgram, List<Membership>> programCustomerMap = new HashMap<>();
+
+		for (LoyaltyProgram program : merchantLoyaltyPrograms) {
+			Optional<Membership> membershipOptional = program.getMemberships().stream()
+					.filter(membership -> membership.getCustomer().getCodiceFiscale().equalsIgnoreCase(taxCode))
+					.findFirst();
+
+			membershipOptional.ifPresent(membership -> {
+				List<Membership> memberships = new ArrayList<>();
+				memberships.add(membership);
+				programCustomerMap.put(program, memberships);
+			});
+		}
+
+		return programCustomerMap;
+	}
+
 }

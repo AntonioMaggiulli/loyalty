@@ -23,7 +23,7 @@ public class Membership {
 	@JoinColumn(name = "customer_id", nullable = false)
 	private Customer customer;
 
-	@OneToOne(mappedBy = "membership", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+	@OneToOne(mappedBy = "membership", cascade = CascadeType.ALL)
 	private MemberCard memberCard;
 
 	@ManyToOne(fetch = FetchType.EAGER)

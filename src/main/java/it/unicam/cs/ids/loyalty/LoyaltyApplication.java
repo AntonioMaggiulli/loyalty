@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import it.unicam.cs.ids.loyalty.view.CustomerDashboard;
+import it.unicam.cs.ids.loyalty.view.EmployeeDashboard;
 import it.unicam.cs.ids.loyalty.view.MerchantDashboard;
 
 import java.util.Scanner;
@@ -17,6 +18,8 @@ public class LoyaltyApplication implements CommandLineRunner {
 	private MerchantDashboard merchantDashboard;
 	@Autowired
 	private CustomerDashboard customerDashboard;
+	@Autowired
+	private EmployeeDashboard employeeDashboard;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LoyaltyApplication.class, args);
@@ -36,6 +39,7 @@ public class LoyaltyApplication implements CommandLineRunner {
 			System.out.println("2. Registrati come Merchant");
 			System.out.println("3. Login come Cliente");
 			System.out.println("4. Registrati come Cliente");
+			System.out.println("5. Login come Impegato");
 			System.out.println("0. Esci");
 
 			int choice = scanner.nextInt();
@@ -53,6 +57,9 @@ public class LoyaltyApplication implements CommandLineRunner {
 				break;
 			case 4:
 				customerDashboard.insertCustomer();
+				break;
+			case 5:
+				employeeDashboard.login();
 				break;
 			case 0:
 				System.out.println("Arrivederci!");

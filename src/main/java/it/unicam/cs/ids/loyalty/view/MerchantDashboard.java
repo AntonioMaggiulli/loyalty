@@ -109,7 +109,7 @@ public class MerchantDashboard {
 				break;
 			case 0:
 				System.out.println("Arrivederci!");
-				System.exit(0);
+				return;
 			default:
 				System.out.println("Opzione non valida. Riprova.");
 				break;
@@ -225,7 +225,7 @@ public class MerchantDashboard {
 		List<Level> levels = loyaltyProgramService.getLevelsOfLoyaltyProgram(programId);
 		levels.forEach(level -> System.out.println("Codice Livello: " + level.getId() + ", Nome: " + level.getName()));
 
-		System.out.print("Inserisci il codice del livello di fedeltà: ");
+		System.out.print("Inserisci il codice del livello di fedeltà (0 per qualsiasi livello): ");
 		int levelId = scanner.nextInt();
 
 		scanner.nextLine();
@@ -280,34 +280,35 @@ public class MerchantDashboard {
 			return;
 		}
 
-		Benefit createdBenefit = merchantService.createBenefit(benefitType, benefitName, benefitDescription,
-				pointsRequired, merchantId, programId, levelId, additionalParams);
+		merchantService.createBenefit(benefitType, benefitName, benefitDescription, pointsRequired, merchantId,
+				programId, levelId, additionalParams);
 
-		System.out.println("Benefit creato con successo: " + createdBenefit.getName());
+		System.out.println("Benefit creato con successo");
 	}
-	 public void createEmployee(int merchantId) {
-	        System.out.println("Creazione di un nuovo account dipendente.");
 
-	        System.out.print("Inserisci il nome del dipendente: ");
-	        String name = scanner.nextLine();
+	public void createEmployee(int merchantId) {
+		System.out.println("Creazione di un nuovo account dipendente.");
 
-	        System.out.print("Inserisci la matricola del dipendente: ");
-	        String matricola = scanner.nextLine();
-	        String username="user";
-	        String password="password";
+		System.out.print("Inserisci il nome del dipendente: ");
+		String name = scanner.nextLine();
 
+		System.out.print("Inserisci la matricola del dipendente: ");
+		String matricola = scanner.nextLine();
+		String username = "user";
+		String password = "password";
 
-	        merchantService.createNewEmployee(merchantId,name,matricola,username,password);
+		merchantService.createNewEmployee(merchantId, name, matricola, username, password);
 
-	        System.out.println("Dipendente creato con successo: " + name);
-	    }
-	 public Merchant insertMerchant(){
-		 System.out.print("inserisci il nome dell'azienda");
-		 String name = scanner.nextLine();
-		 System.out.print("inserisci la descrizione");
-		 String description = scanner.nextLine();
-		 Merchant newMerchant=new Merchant(name, description);
-		 System.out.println("Mechant creato con successo");
-		 return merchantRepository.save(newMerchant);
-		 }
-	 }
+		System.out.println("Dipendente creato con successo: " + name);
+	}
+
+	public Merchant insertMerchant() {
+		System.out.print("inserisci il nome dell'azienda");
+		String name = scanner.nextLine();
+		System.out.print("inserisci la descrizione");
+		String description = scanner.nextLine();
+		Merchant newMerchant = new Merchant(name, description);
+		System.out.println("Mechant creato con successo");
+		return merchantRepository.save(newMerchant);
+	}
+}
