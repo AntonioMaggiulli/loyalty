@@ -10,6 +10,7 @@ import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a loyalty program offered by Merchants.
@@ -248,4 +249,17 @@ public class LoyaltyProgram {
 		newMembership.setCurrentLevel(level);
 		return newMembership;
 	}
+
+    @Override
+    public boolean equals(Object o) {
+       
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return this.id == ((LoyaltyProgram) o).id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

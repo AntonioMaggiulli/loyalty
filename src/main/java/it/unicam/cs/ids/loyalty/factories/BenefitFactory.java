@@ -70,6 +70,7 @@ public class BenefitFactory {
 		            throw new IllegalArgumentException("Tipo di Benefit non supportato.");
 		    }
 		    
+		    benefit.setType(type);
 		    benefit.setName(name);
 		    benefit.setDescription(description);
 		    benefit.setPointsRequired(pointsRequired);

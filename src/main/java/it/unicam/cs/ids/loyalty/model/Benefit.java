@@ -31,6 +31,7 @@ public abstract class Benefit {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	private String type;
 	private String name;
 	private String description;
 	
@@ -62,8 +63,9 @@ public abstract class Benefit {
 	 * @param offeringMerchant The merchant offering the benefit.
 	 * @param loyaltyProgram   The loyalty program associated with the benefit.
 	 */
-	public Benefit(String name, String description, int pointsRequired, Merchant offeringMerchant,
+	public Benefit(String type, String name, String description, int pointsRequired, Merchant offeringMerchant,
 			LoyaltyProgram loyaltyProgram) {
+		this.type=type;
 		this.name = name;
 		this.description = description;
 		this.pointsRequired = pointsRequired;
@@ -163,6 +165,14 @@ public abstract class Benefit {
 
 	public void setAssociatedLevel(Level associatedLevel) {
 		this.associatedLevel = associatedLevel;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

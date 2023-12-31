@@ -18,9 +18,12 @@ import jakarta.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @Component
 public class MerchantDashboard {
@@ -143,21 +146,53 @@ public class MerchantDashboard {
 		}
 
 	}
-
 	@Transactional
 	private void joinCoalition(int merchantId) {
-		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
-		System.out.println("\n\nAdesione ad una Coalizione per " + merchant.getName() + "\nCoalizioni Disponibili:\n");
+	    Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+	    if (merchant == null) {
+	        System.out.println("Merchant non trovato.");
+	        return;
+	    }
+	    System.out.println("\n\nAdesione ad una Coalizione per " + merchant.getName() + "\nCoalizioni Disponibili:\n");
 
-		List<LoyaltyProgram> coalitions = loyaltyProgramService.getCoalitions();
-		coalitions.stream()
-				.filter(lp -> lp.getPartnerships().stream().anyMatch(p -> p.getMerchant().getId() != merchantId))
-				.forEach(lp -> System.out.println(lp.getId() + ": " + lp.getProgramName() + "\n"));
-		System.out.print("Inserisci il codice del programma di fedeltà cui vuoi aderire: ");
-		int programId = scanner.nextInt();
-		LoyaltyProgram loyaltyProgram = loyaltyProgramService.getById(programId).get();
-		merchantService.joinCoalition(merchant, loyaltyProgram);
+	    List<LoyaltyProgram> currentCoalitions = merchant.getPartnerships().stream()
+	                                                    .map(Partnership::getLoyaltyProgram)
+	                                                    .collect(Collectors.toList());
 
+	    List<LoyaltyProgram> coalitions = loyaltyProgramService.getCoalitions().stream()
+	              .filter(lp -> !currentCoalitions.contains(lp))
+	              .filter(lp -> lp.getPartnerships().stream().noneMatch(p -> p.getMerchant().getId() == merchantId))
+	              .collect(Collectors.toList());
+
+	    if (coalitions.isEmpty()) {
+	        System.out.println("Non ci sono coalizioni disponibili a cui aderire al momento.");
+	        return;
+	    }
+
+	    for (int i = 0; i < coalitions.size(); i++) {
+	        System.out.println((i + 1) + ". " + coalitions.get(i).getProgramName());
+	    }
+
+	    System.out.print("Scegli il numero della coalizione a cui vuoi aderire (0 per uscire): ");
+	    try {
+	        int choice = scanner.nextInt();
+	        scanner.nextLine(); // Pulizia del buffer dopo la lettura di un numero
+
+	        if (choice == 0) {
+	            System.out.println("Uscita dalla procedura di adesione.");
+	            return;
+	        } else if (choice < 1 || choice > coalitions.size()) {
+	            System.out.println("Scelta non valida.");
+	            return;
+	        }
+
+	        LoyaltyProgram selectedProgram = coalitions.get(choice - 1);
+	        merchantService.joinCoalition(merchant, selectedProgram);
+	        System.out.println("Adesione avvenuta con successo alla coalizione: " + selectedProgram.getProgramName());
+	    } catch (InputMismatchException e) {
+	        System.out.println("Errore: input non valido. Inserisci un numero.");
+	        scanner.nextLine(); // Pulizia del buffer
+	    }
 	}
 
 	private void viewMerchantLoyaltyProgram(int merchantId) {
@@ -280,10 +315,17 @@ public class MerchantDashboard {
 			return;
 		}
 
-		merchantService.createBenefit(benefitType, benefitName, benefitDescription, pointsRequired, merchantId,
-				programId, levelId, additionalParams);
+		try {
+			merchantService.createBenefit(benefitType, benefitName, benefitDescription, pointsRequired, merchantId,
+					programId, levelId, additionalParams);
 
-		System.out.println("Benefit creato con successo");
+			System.out.println("Benefit creato con successo");
+		} catch (IllegalArgumentException e) {
+		    System.out.println("Errore nella creazione del benefit: " + e.getMessage());
+
+		}
+
+
 	}
 
 	public void createEmployee(int merchantId) {

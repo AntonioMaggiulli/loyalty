@@ -201,9 +201,9 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 			List<Membership> memberships = program.getMemberships().stream()
 					.filter(membership -> membership.getCustomer().getCognome().equalsIgnoreCase(surname))
 					.collect(Collectors.toList());
-			programCustomerMap.put(program, memberships);
+			if (!memberships.isEmpty()) programCustomerMap.put(program, memberships);
 		}
-
+		if (programCustomerMap.isEmpty()) return null;
 		return programCustomerMap;
 	}
 

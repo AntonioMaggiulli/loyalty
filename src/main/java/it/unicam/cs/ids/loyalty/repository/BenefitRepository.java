@@ -1,6 +1,7 @@
 package it.unicam.cs.ids.loyalty.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,22 +17,26 @@ import java.util.List;
  */
 public interface BenefitRepository extends JpaRepository<Benefit, Integer> {
 
-    /**
-     * Retrieves Benefit entities by the offering merchant.
-     *
-     * @param offeringMerchant The offering merchant to search for.
-     * @return List of Benefit entities offered by the specified merchant.
-     */
-    List<Benefit> findByOfferingMerchant(Merchant offeringMerchant);
+	/**
+	 * Retrieves Benefit entities by the offering merchant.
+	 *
+	 * @param offeringMerchant The offering merchant to search for.
+	 * @return List of Benefit entities offered by the specified merchant.
+	 */
+	List<Benefit> findByOfferingMerchant(Merchant offeringMerchant);
 
-    /**
-     * Retrieves Benefit entities by the associated loyalty program.
-     *
-     * @param loyaltyProgram The associated loyalty program to search for.
-     * @return List of Benefit entities associated with the specified loyalty program.
-     */
-    List<Benefit> findByLoyaltyProgram(LoyaltyProgram loyaltyProgram);
+	/**
+	 * Retrieves Benefit entities by the associated loyalty program.
+	 *
+	 * @param loyaltyProgram The associated loyalty program to search for.
+	 * @return List of Benefit entities associated with the specified loyalty
+	 *         program.
+	 */
+	List<Benefit> findByLoyaltyProgram(LoyaltyProgram loyaltyProgram);
 
 	List<Benefit> findByAssociatedLevel(Level level);
-}
 
+	Optional<Benefit> findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(
+	        String type, int loyaltyProgramId, int offeringMerchantId, int associatedLevelId);
+
+}

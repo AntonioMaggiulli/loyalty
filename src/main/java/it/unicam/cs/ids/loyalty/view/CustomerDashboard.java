@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -122,22 +123,36 @@ public class CustomerDashboard {
 	}
 
 	private void joinLoyaltyProgram(int customerId) {
-		System.out.println("Programmi fedeltà disponibili per l'adesione:");
-		List<LoyaltyProgram> availablePrograms = loyaltyProgramService.getAvailableCustomerProgram(customerId);
-		availablePrograms.forEach(
-				program -> System.out.println("Codice: " + program.getId() + ", Nome: " + program.getProgramName()));
+	    System.out.println("Programmi fedeltà disponibili per l'adesione:");
+	    List<LoyaltyProgram> availablePrograms = loyaltyProgramService.getAvailableCustomerProgram(customerId);
 
-		System.out.print("Scegli il codice del programma di fedeltà a cui vuoi aderire: ");
-		int programId = scanner.nextInt();
-		scanner.nextLine();
+	    for (int i = 0; i < availablePrograms.size(); i++) {
+	        LoyaltyProgram program = availablePrograms.get(i);
+	        System.out.println((i + 1) + ". Nome: " + program.getProgramName());
+	    }
 
-		LoyaltyProgram selectedProgram = loyaltyProgramService.getById(programId).orElse(null);
-		if (selectedProgram != null) {
-			loyaltyProgramService.joinLoyaltyProgram(customerId, programId);
-			System.out.println("Ti sei iscritto con successo al programma: " + selectedProgram.getProgramName());
-		} else {
-			System.out.println("Programma di fedeltà non trovato.");
-		}
+	    System.out.print("Scegli il numero del programma di fedeltà a cui vuoi aderire (0 per uscire): ");
+
+	    int choice;
+	    try {
+	        choice = scanner.nextInt();
+	        scanner.nextLine(); // Pulizia del buffer
+
+	        if (choice == 0) {
+	            System.out.println("Uscita dal menu di iscrizione.");
+	            return;
+	        } else if (choice < 1 || choice > availablePrograms.size()) {
+	            System.out.println("Scelta non valida.");
+	            return;
+	        }
+
+	        LoyaltyProgram selectedProgram = availablePrograms.get(choice - 1);
+	        loyaltyProgramService.joinLoyaltyProgram(customerId, selectedProgram.getId());
+	        System.out.println("Ti sei iscritto con successo al programma: " + selectedProgram.getProgramName());
+	    } catch (InputMismatchException e) {
+	        System.out.println("Errore: input non valido. Inserisci un numero.");
+	        scanner.nextLine(); // Pulizia del buffer
+	    }
 	}
 
 	public Customer insertCustomer() {

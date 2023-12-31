@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -114,20 +115,47 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
 				.orElseThrow(() -> new IllegalArgumentException("Programma Fedeltà non trovato."));
-		List<Level> associatedLevel = new ArrayList<Level>();
-		if (levelId == 0) {
 
-			associatedLevel.addAll(loyaltyProgram.getLevels());
-		} else
-			associatedLevel.add(levelRepository.findById(levelId).get());
+		List<Level> associatedLevels = levelId == 0 ? new ArrayList<>(loyaltyProgram.getLevels())
+				: Collections.singletonList(levelRepository.findById(levelId)
+						.orElseThrow(() -> new IllegalArgumentException("Livello non trovato.")));
 
-		for (Level level : associatedLevel) {
+		for (Level level : associatedLevels) {
+// Controlla se esiste già un Benefit di tipo PointsReward per questa combinazione
+			if (type.equals("POINTS_REWARD")
+					&& benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type, loyaltyProgramId,
+							merchantId, level.getId()).isPresent()) {
+				throw new IllegalArgumentException(
+						"Un Benefit di tipo PointsReward esiste già per questo livello fedeltà.");
+			}
+
 			Benefit benefit = BenefitFactory.createBenefit(type, name, description, pointsRequired, offeringMerchant,
 					loyaltyProgram, level, additionalParams);
 
 			benefitRepository.save(benefit);
 		}
 	}
+
+	/*
+	 * public void createBenefit(String type, String name, String description, int
+	 * pointsRequired, int merchantId, int loyaltyProgramId, int levelId, Object...
+	 * additionalParams) { Merchant offeringMerchant =
+	 * merchantRepository.findById(merchantId) .orElseThrow(() -> new
+	 * IllegalArgumentException("Merchant non trovato.")); LoyaltyProgram
+	 * loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
+	 * .orElseThrow(() -> new
+	 * IllegalArgumentException("Programma Fedeltà non trovato.")); List<Level>
+	 * associatedLevel = new ArrayList<Level>(); if (levelId == 0) {
+	 * 
+	 * associatedLevel.addAll(loyaltyProgram.getLevels()); } else
+	 * associatedLevel.add(levelRepository.findById(levelId).get());
+	 * 
+	 * for (Level level : associatedLevel) { Benefit benefit =
+	 * BenefitFactory.createBenefit(type, name, description, pointsRequired,
+	 * offeringMerchant, loyaltyProgram, level, additionalParams);
+	 * 
+	 * benefitRepository.save(benefit); } }
+	 */
 
 	@Transactional
 	public void joinCoalition(Merchant merchant, LoyaltyProgram loyaltyProgram) {

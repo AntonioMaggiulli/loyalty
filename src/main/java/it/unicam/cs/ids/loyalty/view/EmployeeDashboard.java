@@ -119,7 +119,7 @@ int option=9;
 
 	private void searchBySurname(int merchantId) {
 		System.out.println("Inserisci il cognome del cliente:");
-		String surname = scanner.nextLine();
+		String surname = scanner.nextLine().toUpperCase();
 
 		Map<LoyaltyProgram, List<Membership>> customersByProgram = loyaltyProgramService
 				.getCustomersBySurnameForMerchantPrograms(surname, merchantId);
@@ -132,14 +132,14 @@ int option=9;
 
 	private void searchByTaxCode(int merchantId) {
 		System.out.println("Inserisci il codice fiscale del cliente:");
-		String taxCode = scanner.nextLine();
+		String taxCode = scanner.nextLine().toUpperCase();
 
 		Map<LoyaltyProgram, List<Membership>> membershipByProgram = loyaltyProgramService
 				.getCustomerByTaxCodeForMerchantPrograms(taxCode, merchantId);
 	    if (membershipByProgram != null) {
 	        printCustomersInfo(membershipByProgram);
 	    } else {
-	        System.out.println("Nessun cliente trovato con il cognome specificato.");
+	        System.out.println("Nessun cliente trovato con il parametro specificato.");
 	    }
 	}
 
@@ -153,8 +153,8 @@ int option=9;
 				System.out.println("Programma di fedeltà: " + program.getProgramName());
 				for (Membership membership : memberships) {
 					Customer customer = membership.getCustomer();
-					System.out.println("\n------------------------------------------------------------------\n"+
-							"ID Tessera: " + membership.getId() + ", Nome: " + customer.getNome() + ", Cognome: "
+					System.out.println("\n--------------"+program.getProgramName()+"-----------\n"+
+							"ID Tessera: " + membership.getMemberCard().getCardNumber() + ", Nome: " + customer.getNome() + ", Cognome: "
 									+ customer.getCognome() + ", Codice Fiscale: " + customer.getCodiceFiscale());
 				}
 			}
