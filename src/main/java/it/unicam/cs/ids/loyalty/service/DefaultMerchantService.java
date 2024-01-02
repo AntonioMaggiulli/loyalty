@@ -139,7 +139,7 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 						.orElseThrow(() -> new IllegalArgumentException("Livello non trovato.")));
 
 		for (Level level : associatedLevels) {
-// Controllo se esiste già un Benefit di tipo PointsReward per questa combinazione
+
 			if (type.equals("POINTS_REWARD")
 					&& benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
 							loyaltyProgramId, merchantId, level.getId()).isPresent()) {
@@ -153,8 +153,6 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 			benefitRepository.save(benefit);
 		}
 	}
-
-
 
 	@Transactional
 	public void joinCoalition(Merchant merchant, LoyaltyProgram loyaltyProgram) {
@@ -174,25 +172,4 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 		merchantRepository.save(merchant);
 
 	}
-
-	public void createTransaction(String type, int merchantId, double amount, String cardString) {
-		MemberCard card = memberCardRepository.findByCardNumber(cardString).orElse(null);
-		Membership membership = membershipRepository.findByMemberCard(card).orElse(null);
-		int loyaltyProgramId = membership.getLoyaltyProgram().getId();
-		int levelId = membership.getCurrentLevel().getId();
-
-		Benefit benefit = benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
-				loyaltyProgramId, merchantId, levelId)
-				.orElseThrow(() -> new IllegalArgumentException("Benefit non trovato."));
-		MembershipAccount account = membership.getAccount();
-
-		Transaction transaction = new Transaction(benefit, amount, account);
-		benefit.applyBenefit(transaction);
-
-		transactionRepository.save(transaction);
-
-		account.updatePoints(transaction);
-		membershipAccountRepository.save(account);
-	}
-
 }

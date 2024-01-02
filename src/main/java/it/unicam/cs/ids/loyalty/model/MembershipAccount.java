@@ -90,7 +90,7 @@ public class MembershipAccount {
 
 	public void updatePoints(Transaction transaction) {
 		int pointsEarned = transaction.getPointsEarned();
-		int pointsSpent = transaction.getPointsSpent();
+		int pointsSpent = transaction.getLoyaltyBenefit().getPointsRequired();
 		currentPoints += (pointsEarned - pointsSpent);
 		totalPointsEarned += pointsEarned;
 	}

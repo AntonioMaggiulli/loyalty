@@ -9,14 +9,17 @@ import it.unicam.cs.ids.loyalty.model.Membership;
 import it.unicam.cs.ids.loyalty.model.MembershipAccount;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Partnership;
+import it.unicam.cs.ids.loyalty.model.Transaction;
 import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.CustomerRepository;
 import it.unicam.cs.ids.loyalty.repository.LevelRepository;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
+import it.unicam.cs.ids.loyalty.repository.MembershipAccountRepository;
 import it.unicam.cs.ids.loyalty.repository.MembershipRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
+import it.unicam.cs.ids.loyalty.repository.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -45,6 +48,10 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	private final LevelRepository levelRepository;
 	private final BenefitRepository benefitRepository;
 	private final MemberCardRepository memberCardRepository;
+	@Autowired
+	private TransactionRepository transactionRepository;
+	@Autowired
+	private MembershipAccountRepository membershipAccountRepository;
 
 	@Autowired
 	public DefaultLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository,
@@ -133,7 +140,6 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 		Membership membership = loyaltyProgram.enrollCustomer(customer, initialLevel);
 
-		// Creare account e card
 		MembershipAccount newMembershipAccount = new MembershipAccount(membership);
 		membership.setMembershipAccount(newMembershipAccount);
 
@@ -154,7 +160,6 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
 				.orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
 
-		// Crea un nuovo livello
 		Level newLevel = new Level(levelName, levelDescription, loyaltyProgram, threshold);
 
 		Level savedLevel = levelRepository.save(newLevel);
@@ -167,11 +172,10 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 	@Transactional
 	public List<Level> getLevelsOfLoyaltyProgram(int programId) {
-		// Trova il programma di fedeltà tramite il suo ID
+
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(programId).orElseThrow(
 				() -> new IllegalArgumentException("Programma di fedeltà non trovato con ID: " + programId));
 
-		// Restituisci i livelli associati al programma di fedeltà
 		return loyaltyProgram.getLevels().stream().sorted(Comparator.comparingInt(Level::getPointsThreshold))
 				.collect(Collectors.toList());
 	}
@@ -201,13 +205,16 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 			List<Membership> memberships = program.getMemberships().stream()
 					.filter(membership -> membership.getCustomer().getCognome().equalsIgnoreCase(surname))
 					.collect(Collectors.toList());
-			if (!memberships.isEmpty()) programCustomerMap.put(program, memberships);
+			if (!memberships.isEmpty())
+				programCustomerMap.put(program, memberships);
 		}
-		if (programCustomerMap.isEmpty()) return null;
+		if (programCustomerMap.isEmpty())
+			return null;
 		return programCustomerMap;
 	}
 
-	public Map<LoyaltyProgram, List<Membership>> getCustomerByTaxCodeForMerchantPrograms(String taxCode,int merchantId) {
+	public Map<LoyaltyProgram, List<Membership>> getCustomerByTaxCodeForMerchantPrograms(String taxCode,
+			int merchantId) {
 		List<LoyaltyProgram> merchantLoyaltyPrograms = loyaltyProgramRepository.findByMerchantId(merchantId);
 
 		Map<LoyaltyProgram, List<Membership>> programCustomerMap = new HashMap<>();
@@ -227,4 +234,27 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		return programCustomerMap;
 	}
 
+	public void createTransaction(String type, int merchantId, double amount, String cardString) {
+		MemberCard card = memberCardRepository.findByCardNumber(cardString)
+				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata."));
+		Membership membership = membershipRepository.findByMemberCard(card)
+				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
+		int loyaltyProgramId = membership.getLoyaltyProgram().getId();
+		int levelId = membership.getCurrentLevel().getId();
+
+		Benefit benefit = benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
+				loyaltyProgramId, merchantId, levelId)
+				.orElseThrow(() -> new IllegalArgumentException("Benefit non trovato."));
+		MembershipAccount account = membership.getAccount();
+
+		Transaction transaction = new Transaction(benefit, amount, account);
+
+		benefit.applyBenefit(transaction);
+
+		transactionRepository.save(transaction);
+		benefitRepository.save(benefit);
+
+		account.updatePoints(transaction);
+		membershipAccountRepository.save(account);
+	}
 }

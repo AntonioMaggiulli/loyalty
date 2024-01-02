@@ -128,7 +128,6 @@ public class MerchantDashboard {
 		LoyaltyProgram program = loyaltyProgramService.getById(programId)
 				.orElseThrow(() -> new RuntimeException("Programma di fedeltà non trovato."));
 
-// Utilizza il metodo del servizio per ottenere i benefit per ogni livello
 		Map<Integer, List<Benefit>> benefitsByLevel = loyaltyProgramService.getBenefitsByLoyaltyProgram(programId);
 
 		for (Level level : program.getLevels()) {
@@ -140,7 +139,6 @@ public class MerchantDashboard {
 				for (Benefit benefit : benefits) {
 					System.out.println("  Punti necessari: " + benefit.getPointsRequired() + " - Nome:"
 							+ benefit.getName() + " - " + benefit.getDescription());
-					// Qui puoi visualizzare ulteriori dettagli se necessario
 				}
 			}
 		}

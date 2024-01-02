@@ -204,7 +204,7 @@ int option=9;
                 continue; // Riprende il ciclo while
             }
             String type ="POINTS_REWARD";
-            merchantService.createTransaction(type,merchantId, amount, cardString);
+            loyaltyProgramService.createTransaction(type,merchantId, amount, cardString);
 	    }
         }
 		

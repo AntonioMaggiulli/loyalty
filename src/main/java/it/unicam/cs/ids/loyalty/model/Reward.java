@@ -9,8 +9,9 @@ public class Reward extends Benefit {
 
 	@Override
 	public void applyBenefit(Transaction transaction) {
-		// operazioni specifiche
-		throw new UnsupportedOperationException();
+		transaction.setPointsSpent(transaction.getLoyaltyBenefit().getPointsRequired());
+		qtyAvailable--;
+
 	}
 
 	public int getQty() {

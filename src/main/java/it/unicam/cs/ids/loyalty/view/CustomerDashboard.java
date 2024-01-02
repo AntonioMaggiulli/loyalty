@@ -2,38 +2,58 @@ package it.unicam.cs.ids.loyalty.view;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Customer;
+import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
+import it.unicam.cs.ids.loyalty.model.MemberCard;
 import it.unicam.cs.ids.loyalty.model.Membership;
+import it.unicam.cs.ids.loyalty.model.PointsReward;
+import it.unicam.cs.ids.loyalty.model.Reward;
+import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.CustomerRepository;
+import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
+import it.unicam.cs.ids.loyalty.repository.MembershipRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultCustomerService;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
+import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
 import it.unicam.cs.ids.loyalty.util.ReferralCodeGenerator;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import ch.qos.logback.core.joran.conditional.IfAction;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 @Component
 public class CustomerDashboard {
 
 	private final CustomerRepository customerRepository;
+	private final BenefitRepository benefitRepository;
+	private final MemberCardRepository memberCardRepository;
+	private final MembershipRepository membershipRepository;
+
 	private DefaultCustomerService customerService;
 	private DefaultLoyaltyProgramService loyaltyProgramService;
 	private Scanner scanner = new Scanner(System.in);
 
 	@Autowired
-	public CustomerDashboard(CustomerRepository customerRepository, DefaultCustomerService customerService,
-			DefaultLoyaltyProgramService loyaltyProgramService) {
+	public CustomerDashboard(CustomerRepository customerRepository, BenefitRepository benefitRepository,
+			DefaultCustomerService customerService, DefaultLoyaltyProgramService loyaltyProgramService,
+			MemberCardRepository memberCardRepository, MembershipRepository membershipRepository) {
 		this.customerRepository = customerRepository;
+		this.benefitRepository = benefitRepository;
 		this.customerService = customerService;
 		this.loyaltyProgramService = loyaltyProgramService;
+		this.memberCardRepository = memberCardRepository;
+		this.membershipRepository = membershipRepository;
 	}
 
 	public void login() {
@@ -61,7 +81,7 @@ public class CustomerDashboard {
 
 	private void displayCustomerList(List<Customer> customers) {
 		for (Customer customer : customers) {
-			System.out.println(customer.getId() + ". " + customer.getCognome()+" "+customer.getNome());
+			System.out.println(customer.getId() + ". " + customer.getCognome() + " " + customer.getNome());
 		}
 	}
 
@@ -69,8 +89,9 @@ public class CustomerDashboard {
 		while (true) {
 			System.out.println("Seleziona un'opzione:");
 			System.out.println("1. Visualizza i tuoi programmi fedeltà");
-			System.out.println("2. Visualizza i tuoi punti e benefit");
+			System.out.println("2. Visualizza un catalogo Premi");
 			System.out.println("3. Aderisci a un programma fedeltà");
+			System.out.println("4. Riscatta un Benefit");
 			System.out.println("0. Esci");
 
 			int option = scanner.nextInt();
@@ -81,10 +102,13 @@ public class CustomerDashboard {
 				viewCustomerLoyaltyPrograms(customerId);
 				break;
 			case 2:
-				viewCustomerPoints(customerId);
+				viewBenefit(customerId);
 				break;
 			case 3:
 				joinLoyaltyProgram(customerId);
+				break;
+			case 4:
+				redeemBenefit(customerId);
 				break;
 			case 0:
 				System.out.println("Arrivederci!");
@@ -106,7 +130,7 @@ public class CustomerDashboard {
 			System.out.println("Non sei iscritto a nessun programma fedeltà.");
 		} else {
 			memberships.forEach(membership -> {
-				System.out.println("CODICE: " + membership.getLoyaltyProgram().getId() + "Programma: "
+				System.out.println("CODICE: " + membership.getLoyaltyProgram().getId() + " Programma: "
 						+ membership.getLoyaltyProgram().getProgramName() + ", Punti: "
 						+ membership.getMembershipAccount().getLoyaltyPoints());
 			});
@@ -123,36 +147,36 @@ public class CustomerDashboard {
 	}
 
 	private void joinLoyaltyProgram(int customerId) {
-	    System.out.println("Programmi fedeltà disponibili per l'adesione:");
-	    List<LoyaltyProgram> availablePrograms = loyaltyProgramService.getAvailableCustomerProgram(customerId);
+		System.out.println("Programmi fedeltà disponibili per l'adesione:");
+		List<LoyaltyProgram> availablePrograms = loyaltyProgramService.getAvailableCustomerProgram(customerId);
 
-	    for (int i = 0; i < availablePrograms.size(); i++) {
-	        LoyaltyProgram program = availablePrograms.get(i);
-	        System.out.println((i + 1) + ". Nome: " + program.getProgramName());
-	    }
+		for (int i = 0; i < availablePrograms.size(); i++) {
+			LoyaltyProgram program = availablePrograms.get(i);
+			System.out.println((i + 1) + ". Nome: " + program.getProgramName());
+		}
 
-	    System.out.print("Scegli il numero del programma di fedeltà a cui vuoi aderire (0 per uscire): ");
+		System.out.print("Scegli il numero del programma di fedeltà a cui vuoi aderire (0 per uscire): ");
 
-	    int choice;
-	    try {
-	        choice = scanner.nextInt();
-	        scanner.nextLine(); // Pulizia del buffer
+		int choice;
+		try {
+			choice = scanner.nextInt();
+			scanner.nextLine(); // Pulizia del buffer
 
-	        if (choice == 0) {
-	            System.out.println("Uscita dal menu di iscrizione.");
-	            return;
-	        } else if (choice < 1 || choice > availablePrograms.size()) {
-	            System.out.println("Scelta non valida.");
-	            return;
-	        }
+			if (choice == 0) {
+				System.out.println("Uscita dal menu di iscrizione.");
+				return;
+			} else if (choice < 1 || choice > availablePrograms.size()) {
+				System.out.println("Scelta non valida.");
+				return;
+			}
 
-	        LoyaltyProgram selectedProgram = availablePrograms.get(choice - 1);
-	        loyaltyProgramService.joinLoyaltyProgram(customerId, selectedProgram.getId());
-	        System.out.println("Ti sei iscritto con successo al programma: " + selectedProgram.getProgramName());
-	    } catch (InputMismatchException e) {
-	        System.out.println("Errore: input non valido. Inserisci un numero.");
-	        scanner.nextLine(); // Pulizia del buffer
-	    }
+			LoyaltyProgram selectedProgram = availablePrograms.get(choice - 1);
+			loyaltyProgramService.joinLoyaltyProgram(customerId, selectedProgram.getId());
+			System.out.println("Ti sei iscritto con successo al programma: " + selectedProgram.getProgramName());
+		} catch (InputMismatchException e) {
+			System.out.println("Errore: input non valido. Inserisci un numero.");
+			scanner.nextLine(); // Pulizia del buffer
+		}
 	}
 
 	public Customer insertCustomer() {
@@ -200,4 +224,62 @@ public class CustomerDashboard {
 		return customerRepository.save(newCustomer);
 
 	}
+
+	private void redeemBenefit(int customerId) {
+
+		viewBenefit(customerId);
+		System.out.print("inserisci il codice del premio richiesto: ");
+		int benefitId = scanner.nextInt();
+		Benefit benefit = benefitRepository.findById(benefitId)
+				.orElseThrow(() -> new EntityNotFoundException("Benefit non trovato."));
+		String type = benefit.getType();
+if (type=="POINTS_REWARD") {
+	return;
+}
+if (benefit instanceof Reward) {
+	Reward reward=(Reward) benefit;
+	if (reward.getQty()<1) {
+		System.out.println("Il premio non è più disponibile, scorte esaurite");
+		return;
+	}
+}
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Customer non trovato."));
+
+		Membership membership = membershipRepository
+				.findByCustomerAndLoyaltyProgram(customer, benefit.getLoyaltyProgram())
+				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
+		String cardString = membership.getMemberCard().getCardNumber();
+
+		int merchantId = benefit.getOfferingMerchant().getId();
+		loyaltyProgramService.createTransaction(type, merchantId, 0, cardString);
+	}
+
+	private void viewBenefit(int customerId) {
+		viewCustomerLoyaltyPrograms(customerId);
+		System.out.print("Inserisci il codice del programma di fedeltà: ");
+		int programId = scanner.nextInt();
+
+		LoyaltyProgram program = loyaltyProgramService.getById(programId)
+				.orElseThrow(() -> new RuntimeException("Programma di fedeltà non trovato."));
+
+		Map<Integer, List<Benefit>> benefitsByLevel = loyaltyProgramService.getBenefitsByLoyaltyProgram(programId);
+
+		for (Level level : program.getLevels()) {
+			System.out.println("\nLivello: " + level.getName());
+			List<Benefit> benefits = benefitsByLevel.get(level.getId());
+			if (benefits.isEmpty()) {
+				System.out.println("  Nessun benefit disponibile per questo livello.");
+			} else {
+				for (Benefit benefit : benefits) {
+					if (!(benefit.getType().equals("POINTS_REWARD")))
+					System.out.println(benefit.getId() + ".  Punti necessari: " + benefit.getPointsRequired()
+							+ " - Nome:" + benefit.getName() + " - " + benefit.getDescription());
+
+				}
+			}
+		}
+
+	}
+
 }

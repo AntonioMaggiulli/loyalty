@@ -11,7 +11,7 @@ public class Transaction {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private int id;
 
 	@ManyToOne
 	@JoinColumn(name = "loyaltyBenefit_id", nullable = false)
@@ -42,7 +42,7 @@ public class Transaction {
 	 *
 	 * @return The ID of the transaction.
 	 */
-	public Long getId() {
+	public int getId() {
 		return id;
 	}
 
@@ -94,5 +94,33 @@ public class Transaction {
 	public void setPointsEarned(int pointsEarned) {
 		this.pointsEarned = pointsEarned;
 
+	}
+
+	public MembershipAccount getMembershipAccount() {
+		return membershipAccount;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setLoyaltyBenefit(Benefit loyaltyBenefit) {
+		this.loyaltyBenefit = loyaltyBenefit;
+	}
+
+	public void setPointsSpent(int pointsSpent) {
+		this.pointsSpent = pointsSpent;
+	}
+
+	public void setEurosSpent(double eurosSpent) {
+		this.eurosSpent = eurosSpent;
+	}
+
+	public void setTimestamp(LocalDateTime timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public void setMembershipAccount(MembershipAccount membershipAccount) {
+		this.membershipAccount = membershipAccount;
 	}
 }
