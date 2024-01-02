@@ -34,7 +34,6 @@ public abstract class Benefit {
 	private String type;
 	private String name;
 	private String description;
-	
 
 	@ManyToOne
 	private LoyaltyProgram loyaltyProgram;
@@ -45,7 +44,7 @@ public abstract class Benefit {
 	@ManyToOne
 	@JoinColumn(name = "associated_level_id")
 	private Level associatedLevel;
-	private int pointsRequired=0;
+	private int pointsRequired = 0;
 	private boolean exclusiveRequired;
 
 	/**
@@ -65,7 +64,7 @@ public abstract class Benefit {
 	 */
 	public Benefit(String type, String name, String description, int pointsRequired, Merchant offeringMerchant,
 			LoyaltyProgram loyaltyProgram) {
-		this.type=type;
+		this.type = type;
 		this.name = name;
 		this.description = description;
 		this.pointsRequired = pointsRequired;
@@ -148,16 +147,7 @@ public abstract class Benefit {
 	 *
 	 * @param membership The membership to apply the benefit to.
 	 */
-	public abstract void applyBenefit(Membership membership);
-	/*
-	 * MembershipAccount loyaltyAccount = membership.getMembershipAccount();
-	 * 
-	 * if (loyaltyAccount != null) { int pointsEarned = earnsPoints ?
-	 * getPointsRequired() : 0; double eurosSpent = isCoupon ? 0 : getEuroSpent();
-	 * 
-	 * Transaction transaction = new Transaction(this, pointsEarned, pointsRequired,
-	 * eurosSpent); loyaltyAccount.addTransaction(transaction); }
-	 */
+	public abstract void applyBenefit(Transaction transaction);
 
 	public Level getAssociatedLevel() {
 		return associatedLevel;

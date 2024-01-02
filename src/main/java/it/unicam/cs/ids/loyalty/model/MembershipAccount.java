@@ -21,7 +21,8 @@ public class MembershipAccount {
 	// punti
 	private int currentPoints = 0;
 
-	// questo attributo segna i punti guadagnati e servirà per determinare il
+	// questo attributo segna i punti guadagnati dall'inizio della membership e
+	// servirà per determinare il
 	// livello di fedeltà
 	private int totalPointsEarned = 0;
 	@OneToMany(mappedBy = "membershipAccount", cascade = CascadeType.ALL)
@@ -87,7 +88,7 @@ public class MembershipAccount {
 		updatePoints(transaction);
 	}
 
-	private void updatePoints(Transaction transaction) {
+	public void updatePoints(Transaction transaction) {
 		int pointsEarned = transaction.getPointsEarned();
 		int pointsSpent = transaction.getPointsSpent();
 		currentPoints += (pointsEarned - pointsSpent);

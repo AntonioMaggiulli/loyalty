@@ -8,8 +8,8 @@ public class Reward extends Benefit {
 	private int qtyAvailable;
 
 	@Override
-	public void applyBenefit(Membership membership) {
-		// TODO Auto-generated method stub
+	public void applyBenefit(Transaction transaction) {
+		// operazioni specifiche
 		throw new UnsupportedOperationException();
 	}
 

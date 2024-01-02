@@ -7,17 +7,11 @@ import jakarta.persistence.Table;
 @Table(name = "points_reward")
 public class PointsReward extends Benefit {
 
-	private int earnsPoints=1;
-	private double moneySpent=1.0;
+	private int earnsPoints = 1;
+	private double moneySpent = 1.0;
 
 	public PointsReward() {
-	
-	}
 
-	@Override
-	public void applyBenefit(Membership membership) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
 	}
 
 	public int getEarnsPoints() {
@@ -34,6 +28,20 @@ public class PointsReward extends Benefit {
 
 	public void setMoneySpent(double moneySpent) {
 		this.moneySpent = moneySpent;
+	}
+
+	@Override
+	public void applyBenefit(Transaction transaction) {
+		if (transaction.getLoyaltyBenefit() instanceof PointsReward) {
+			PointsReward pointsReward = (PointsReward) transaction.getLoyaltyBenefit();
+			double eurosSpent = transaction.getEurosSpent();
+
+			int pointsEarned = (int) (eurosSpent / pointsReward.getMoneySpent() * pointsReward.getEarnsPoints());
+
+			transaction.setPointsEarned(pointsEarned);
+		} else {
+			throw new UnsupportedOperationException("Il benefit associato non è di tipo PointsReward.");
+		}
 	}
 
 }
