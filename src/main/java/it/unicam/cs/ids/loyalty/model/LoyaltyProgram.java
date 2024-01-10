@@ -7,7 +7,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +37,7 @@ public class LoyaltyProgram {
 	@OneToMany(mappedBy = "loyaltyProgram", fetch = FetchType.EAGER)
 	private List<Partnership> partnerships = new ArrayList<>();
 
-	private Date expiringDate;
+	private LocalDate expiringDate;
 
 	/**
 	 * Default constructor.
@@ -52,10 +54,11 @@ public class LoyaltyProgram {
 	 * @param isCoalition Indicates if the program is a coalition of multiple
 	 *                    merchants.
 	 */
-	public LoyaltyProgram(String programName, String description, boolean isCoalition) {
+	public LoyaltyProgram(String programName, String description, boolean isCoalition, LocalDate expirationDate) {
 		this.programName = programName;
 		this.description = description;
 		this.isCoalition = isCoalition;
+		this.expiringDate = expirationDate;
 	}
 
 	/**
@@ -65,6 +68,11 @@ public class LoyaltyProgram {
 	 */
 	public void addLevel(Level level) {
 		this.levels.add(level);
+		sortLevels();
+	}
+
+	private void sortLevels() {
+		levels.sort(Comparator.comparingInt(Level::getPointsThreshold));
 	}
 
 	/**
@@ -244,22 +252,35 @@ public class LoyaltyProgram {
 		this.programName = programName;
 	}
 
+	public LocalDate getExpiringDate() {
+		return expiringDate;
+	}
+
+	public void setExpiringDate(LocalDate expiringDate) {
+		this.expiringDate = expiringDate;
+	}
+
 	public Membership enrollCustomer(Customer customer, Level level) {
 		Membership newMembership = new Membership(customer, this);
 		newMembership.setCurrentLevel(level);
 		return newMembership;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-       
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        return this.id == ((LoyaltyProgram) o).id;
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LoyaltyProgram other = (LoyaltyProgram) obj;
+		return id == other.id;
+	}
+
 }

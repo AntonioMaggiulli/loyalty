@@ -21,4 +21,11 @@ public class Reward extends Benefit {
 	public void setQty(int qty) {
 		this.qtyAvailable = qty;
 	}
+	
+	@Override
+	public boolean isEligibleForRedemption(MembershipAccount account) {
+
+		return this.qtyAvailable > 0 && this.getPointsRequired() <= account.getLoyaltyPoints();
+	}
+
 }

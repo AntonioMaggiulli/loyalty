@@ -2,6 +2,7 @@ package it.unicam.cs.ids.loyalty.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.*;
 
@@ -130,5 +131,22 @@ public class Merchant {
 	public void removeEmployee(Employee employee) {
 		employees.remove(employee);
 		employee.setMerchant(null);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Merchant other = (Merchant) obj;
+		return id == other.id;
 	}
 }

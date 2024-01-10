@@ -1,6 +1,7 @@
 package it.unicam.cs.ids.loyalty.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import jakarta.persistence.*;
 
@@ -110,4 +111,17 @@ public class MembershipAccount {
 	public void setTransactions(List<Transaction> transactions) {
 		this.transactions = transactions;
 	}
+
+	public void checkUpgradeForLevel(LoyaltyProgram loyaltyProgram) {
+		List<Level> levels = new ArrayList<>(loyaltyProgram.getLevels());
+
+		Level nextLevel = levels.stream().filter(level -> totalPointsEarned >= level.getPointsThreshold())
+				.reduce((first, second) -> second).orElse(getMembership().getCurrentLevel());
+
+		if (!nextLevel.equals(getMembership().getCurrentLevel())) {
+			getMembership().setCurrentLevel(nextLevel);
+
+		}
+	}
+
 }

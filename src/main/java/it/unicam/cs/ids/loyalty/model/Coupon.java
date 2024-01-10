@@ -45,4 +45,10 @@ public class Coupon extends Benefit {
 		this.expiringDate = expiringDate;
 	}
 
+	@Override
+	public boolean isEligibleForRedemption(MembershipAccount account) {
+
+		return this.expiringDate.after(new Date()) && this.getPointsRequired() <= account.getLoyaltyPoints();
+	}
+
 }

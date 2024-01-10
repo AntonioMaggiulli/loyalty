@@ -148,6 +148,8 @@ public abstract class Benefit {
 	 * @param membership The membership to apply the benefit to.
 	 */
 	public abstract void applyBenefit(Transaction transaction);
+	
+	public abstract boolean isEligibleForRedemption(MembershipAccount account); 
 
 	public Level getAssociatedLevel() {
 		return associatedLevel;

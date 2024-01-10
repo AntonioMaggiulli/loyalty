@@ -1,5 +1,8 @@
 package it.unicam.cs.ids.loyalty.model;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -74,4 +77,23 @@ public class MemberCard {
 	public void setMembership(Membership membership) {
 		this.membership = membership;
 	}
+
+	public boolean isCardValid() {
+		if (this.membership == null) {
+			return false;
+		}
+
+		LoyaltyProgram loyaltyProgram = this.membership.getLoyaltyProgram();
+		if (loyaltyProgram == null) {
+			return false;
+		}
+
+		LocalDate expirationDate = loyaltyProgram.getExpiringDate();
+		if (expirationDate == null) {
+			return false;
+		}
+
+		return !LocalDate.now().isAfter(expirationDate);
+	}
+
 }

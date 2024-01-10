@@ -19,7 +19,7 @@ public class Transaction {
 
 	private int pointsEarned;
 	private int pointsSpent;
-	private double eurosSpent;
+	private double moneySpent;
 	private LocalDateTime timestamp;
 
 	@ManyToOne
@@ -32,7 +32,7 @@ public class Transaction {
 
 	public Transaction(Benefit loyaltyBenefit, double eurosSpent, MembershipAccount account) {
 		this.loyaltyBenefit = loyaltyBenefit;
-		this.eurosSpent = eurosSpent;
+		this.moneySpent = eurosSpent;
 		this.membershipAccount = account;
 		this.timestamp = LocalDateTime.now();
 	}
@@ -79,7 +79,7 @@ public class Transaction {
 	 * @return The euros spent in the transaction.
 	 */
 	public double getEurosSpent() {
-		return eurosSpent;
+		return moneySpent;
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class Transaction {
 	}
 
 	public void setEurosSpent(double eurosSpent) {
-		this.eurosSpent = eurosSpent;
+		this.moneySpent = eurosSpent;
 	}
 
 	public void setTimestamp(LocalDateTime timestamp) {

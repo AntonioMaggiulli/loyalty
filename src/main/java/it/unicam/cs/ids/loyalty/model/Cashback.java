@@ -14,7 +14,7 @@ public class Cashback extends Benefit {
 
 	@Override
 	public void applyBenefit(Transaction transaction) {
-		//implementazione specifica del cashback
+		// implementazione specifica del cashback
 	}
 
 	public double getCashBackRate() {
@@ -23,6 +23,12 @@ public class Cashback extends Benefit {
 
 	public void setCashBackRate(double cashBackRate) {
 		this.cashBackRate = cashBackRate;
+	}
+
+	@Override
+	public boolean isEligibleForRedemption(MembershipAccount account) {
+
+		return this.getPointsRequired() <= account.getLoyaltyPoints();
 	}
 
 }

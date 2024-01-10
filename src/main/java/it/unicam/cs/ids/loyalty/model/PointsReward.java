@@ -44,4 +44,10 @@ public class PointsReward extends Benefit {
 		}
 	}
 
+	@Override
+	public boolean isEligibleForRedemption(MembershipAccount account) {
+
+		return true;
+	}
+
 }
