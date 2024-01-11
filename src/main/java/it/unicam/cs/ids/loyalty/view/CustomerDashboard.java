@@ -233,16 +233,9 @@ public class CustomerDashboard {
 		Benefit benefit = benefitRepository.findById(benefitId)
 				.orElseThrow(() -> new EntityNotFoundException("Benefit non trovato."));
 		String type = benefit.getType();
-if (type=="POINTS_REWARD") {
-	return;
-}
-if (benefit instanceof Reward) {
-	Reward reward=(Reward) benefit;
-	if (reward.getQty()<1) {
-		System.out.println("Il premio non è più disponibile, scorte esaurite");
-		return;
-	}
-}
+		if (type == "POINTS_REWARD") {
+			return;
+		}
 		Customer customer = customerRepository.findById(customerId)
 				.orElseThrow(() -> new EntityNotFoundException("Customer non trovato."));
 
@@ -251,8 +244,17 @@ if (benefit instanceof Reward) {
 				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
 		String cardString = membership.getMemberCard().getCardNumber();
 
+		System.out.println("il tuo saldo disponibile è " + membership.getAccount().getLoyaltyPoints());
+
+		if (!benefit.isEligibleForRedemption(membership.getAccount())) {
+			System.out.println("Punti insufficienti oppure il premio non è più disponibile");
+
+			return;
+		}
+
 		int merchantId = benefit.getOfferingMerchant().getId();
 		loyaltyProgramService.createTransaction(type, merchantId, 0, cardString);
+		System.out.println("Premio Riscattato, il tuo nuovo saldo è " + membership.getAccount().getLoyaltyPoints());
 	}
 
 	private void viewBenefit(int customerId) {
@@ -273,8 +275,8 @@ if (benefit instanceof Reward) {
 			} else {
 				for (Benefit benefit : benefits) {
 					if (!(benefit.getType().equals("POINTS_REWARD")))
-					System.out.println(benefit.getId() + ".  Punti necessari: " + benefit.getPointsRequired()
-							+ " - Nome:" + benefit.getName() + " - " + benefit.getDescription());
+						System.out.println(benefit.getId() + ".  Punti necessari: " + benefit.getPointsRequired()
+								+ " - Nome:" + benefit.getName() + " - " + benefit.getDescription());
 
 				}
 			}

@@ -101,8 +101,8 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 	}
 
 	public LoyaltyProgram createLoyaltyProgram(String programName, String description, boolean isCoalition,
-			int merchantId) {
-		LoyaltyProgram loyaltyProgram = new LoyaltyProgram(programName, description, isCoalition);
+			int merchantId, LocalDate expirationDate) {
+		LoyaltyProgram loyaltyProgram = new LoyaltyProgram(programName, description, isCoalition,expirationDate);
 		Optional<Merchant> optionalMerchant = merchantRepository.findById(merchantId);
 		Merchant merchant = optionalMerchant
 				.orElseThrow(() -> new EntityNotFoundException("Merchant not found with id: " + merchantId));
@@ -127,7 +127,7 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 		return partnership;
 	}
 
-	public void createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
+/*	public void createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
 			int loyaltyProgramId, int levelId, Object... additionalParams) {
 		Merchant offeringMerchant = merchantRepository.findById(merchantId)
 				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
@@ -152,12 +152,14 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 
 			benefitRepository.save(benefit);
 		}
-	}
+	}*/
 
 	@Transactional
 	public void joinCoalition(Merchant merchant, LoyaltyProgram loyaltyProgram) {
 		Partnership partnership = createPartnership(merchant, loyaltyProgram);
+		merchant.addPartnership(partnership);
 		partnershipRepository.save(partnership);
+		merchantRepository.save(merchant);
 
 	}
 

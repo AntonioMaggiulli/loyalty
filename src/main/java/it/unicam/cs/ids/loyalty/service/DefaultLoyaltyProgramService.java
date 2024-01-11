@@ -1,5 +1,6 @@
 package it.unicam.cs.ids.loyalty.service;
 
+import it.unicam.cs.ids.loyalty.factories.BenefitFactory;
 import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.model.Level;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
 @Service
 public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram> {
 
+	private final DefaultMerchantService merchantService;
 	private final LoyaltyProgramRepository loyaltyProgramRepository;
 	private final CustomerRepository customerRepository;
 	private final PartnershipRepository partnershipRepository;
@@ -57,7 +60,8 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	public DefaultLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository,
 			CustomerRepository customerRepository, PartnershipRepository partnershipRepository,
 			LevelRepository levelRepository, BenefitRepository benefitRepository,
-			MembershipRepository membershipRepository, MemberCardRepository memberCardRepository) {
+			MembershipRepository membershipRepository, MemberCardRepository memberCardRepository, DefaultMerchantService merchantService) {
+		this.merchantService = merchantService;
 		this.loyaltyProgramRepository = loyaltyProgramRepository;
 		this.customerRepository = customerRepository;
 		this.partnershipRepository = partnershipRepository;
@@ -195,7 +199,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		return benefitsByLevel;
 	}
 
-	public Map<LoyaltyProgram, List<Membership>> getCustomersBySurnameForMerchantPrograms(String surname,
+	public Map<LoyaltyProgram, List<Membership>> findMembershipsBySurnameInMerchantLoyaltyPrograms(String surname,
 			int merchantId) {
 
 		List<LoyaltyProgram> merchantLoyaltyPrograms = loyaltyProgramRepository.findByMerchantId(merchantId);
@@ -255,6 +259,33 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		benefitRepository.save(benefit);
 
 		account.updatePoints(transaction);
+		account.checkUpgradeForLevel(benefit.getLoyaltyProgram());
 		membershipAccountRepository.save(account);
+	}
+	public void createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
+			int loyaltyProgramId, int levelId, Object... additionalParams) {
+		Merchant offeringMerchant = merchantService.getById(merchantId)
+				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
+		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
+				.orElseThrow(() -> new IllegalArgumentException("Programma Fedeltà non trovato."));
+
+		List<Level> associatedLevels = levelId == 0 ? new ArrayList<>(loyaltyProgram.getLevels())
+				: Collections.singletonList(levelRepository.findById(levelId)
+						.orElseThrow(() -> new IllegalArgumentException("Livello non trovato.")));
+
+		for (Level level : associatedLevels) {
+
+			if (type.equals("POINTS_REWARD")
+					&& benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
+							loyaltyProgramId, merchantId, level.getId()).isPresent()) {
+				throw new IllegalArgumentException(
+						"Un Benefit di tipo PointsReward esiste già per questo livello fedeltà.");
+			}
+
+			Benefit benefit = BenefitFactory.createBenefit(type, name, description, pointsRequired, offeringMerchant,
+					loyaltyProgram, level, additionalParams);
+
+			benefitRepository.save(benefit);
+		}
 	}
 }

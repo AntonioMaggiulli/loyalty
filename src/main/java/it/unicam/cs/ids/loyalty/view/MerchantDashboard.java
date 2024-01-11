@@ -2,6 +2,8 @@ package it.unicam.cs.ids.loyalty.view;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.context.request.AbstractRequestAttributes;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Employee;
@@ -13,10 +15,14 @@ import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
 import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
+import it.unicam.cs.ids.loyalty.util.PasswordGenerator;
 import jakarta.transaction.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -29,6 +35,7 @@ import java.util.stream.Collectors;
 public class MerchantDashboard {
 
 	private final MerchantRepository merchantRepository;
+	private final EmployeeRepository employeeRepository;
 	private DefaultMerchantService merchantService;
 	private DefaultLoyaltyProgramService loyaltyProgramService;
 	private Scanner scanner = new Scanner(System.in);
@@ -38,7 +45,7 @@ public class MerchantDashboard {
 			DefaultMerchantService merchantService, DefaultLoyaltyProgramService loyaltyProgramService) {
 		this.merchantRepository = merchantRepository;
 		this.merchantService = merchantService;
-
+		this.employeeRepository = employeeRepository;
 		this.loyaltyProgramService = loyaltyProgramService;
 	}
 
@@ -144,56 +151,56 @@ public class MerchantDashboard {
 		}
 
 	}
+
 	@Transactional
 	private void joinCoalition(int merchantId) {
-	    Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
-	    if (merchant == null) {
-	        System.out.println("Merchant non trovato.");
-	        return;
-	    }
-	    System.out.println("\n\nAdesione ad una Coalizione per " + merchant.getName() + "\nCoalizioni Disponibili:\n");
+		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+		if (merchant == null) {
+			System.out.println("Merchant non trovato.");
+			return;
+		}
+		System.out.println("\n\nAdesione ad una Coalizione per " + merchant.getName() + "\nCoalizioni Disponibili:\n");
 
-	    List<LoyaltyProgram> currentCoalitions = merchant.getPartnerships().stream()
-	                                                    .map(Partnership::getLoyaltyProgram)
-	                                                    .collect(Collectors.toList());
+		List<LoyaltyProgram> currentCoalitions = merchant.getPartnerships().stream().map(Partnership::getLoyaltyProgram)
+				.collect(Collectors.toList());
 
-	    List<LoyaltyProgram> coalitions = loyaltyProgramService.getCoalitions().stream()
-	              .filter(lp -> !currentCoalitions.contains(lp))
-	              .filter(lp -> lp.getPartnerships().stream().noneMatch(p -> p.getMerchant().getId() == merchantId))
-	              .collect(Collectors.toList());
+		List<LoyaltyProgram> coalitions = loyaltyProgramService.getCoalitions().stream()
+				.filter(lp -> !currentCoalitions.contains(lp))
+				.filter(lp -> lp.getPartnerships().stream().noneMatch(p -> p.getMerchant().getId() == merchantId))
+				.collect(Collectors.toList());
 
-	    if (coalitions.isEmpty()) {
-	        System.out.println("Non ci sono coalizioni disponibili a cui aderire al momento.");
-	        return;
-	    }
+		if (coalitions.isEmpty()) {
+			System.out.println("Non ci sono coalizioni disponibili a cui aderire al momento.");
+			return;
+		}
 
-	    for (int i = 0; i < coalitions.size(); i++) {
-	        System.out.println((i + 1) + ". " + coalitions.get(i).getProgramName());
-	    }
+		for (int i = 0; i < coalitions.size(); i++) {
+			System.out.println((i + 1) + ". " + coalitions.get(i).getProgramName());
+		}
 
-	    System.out.print("Scegli il numero della coalizione a cui vuoi aderire (0 per uscire): ");
-	    try {
-	        int choice = scanner.nextInt();
-	        scanner.nextLine(); // Pulizia del buffer dopo la lettura di un numero
+		System.out.print("Scegli il numero della coalizione a cui vuoi aderire (0 per uscire): ");
+		try {
+			int choice = scanner.nextInt();
+			scanner.nextLine(); // Pulizia del buffer dopo la lettura di un numero
 
-	        if (choice == 0) {
-	            System.out.println("Uscita dalla procedura di adesione.");
-	            return;
-	        } else if (choice < 1 || choice > coalitions.size()) {
-	            System.out.println("Scelta non valida.");
-	            return;
-	        }
+			if (choice == 0) {
+				System.out.println("Uscita dalla procedura di adesione.");
+				return;
+			} else if (choice < 1 || choice > coalitions.size()) {
+				System.out.println("Scelta non valida.");
+				return;
+			}
 
-	        LoyaltyProgram selectedProgram = coalitions.get(choice - 1);
-	        merchantService.joinCoalition(merchant, selectedProgram);
-	        System.out.println("Adesione avvenuta con successo alla coalizione: " + selectedProgram.getProgramName());
-	    } catch (InputMismatchException e) {
-	        System.out.println("Errore: input non valido. Inserisci un numero.");
-	        scanner.nextLine(); // Pulizia del buffer
-	    }
+			LoyaltyProgram selectedProgram = coalitions.get(choice - 1);
+			merchantService.joinCoalition(merchant, selectedProgram);
+			System.out.println("Adesione avvenuta con successo alla coalizione: " + selectedProgram.getProgramName());
+		} catch (InputMismatchException e) {
+			System.out.println("Errore: input non valido. Inserisci un numero.");
+			scanner.nextLine(); // Pulizia del buffer
+		}
 	}
 
-	private void viewMerchantLoyaltyProgram(int merchantId) {
+	private List<Partnership> viewMerchantLoyaltyProgram(int merchantId) {
 		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
 		System.out.println("\n=========================================================\n"
 				+ "Lista dei programmi fedeltà di " + merchant.getName() + ":\n");
@@ -207,6 +214,7 @@ public class MerchantDashboard {
 			});
 		}
 		System.out.println("=========================================================\n");
+		return partnerships;
 	}
 
 	private void createLoyaltyProgram(int merchantId) {
@@ -218,12 +226,23 @@ public class MerchantDashboard {
 		System.out.println("Inserisci una breve descrizione del programma:");
 		String loyaltyProgramDescription = scanner.nextLine();
 
+		System.out.println("Inserisci la data di scadenza del programma (formato YYYY-MM-DD):");
+		String expirationDateStr = scanner.nextLine();
+
+		LocalDate expirationDate;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			expirationDate = LocalDate.parse(expirationDateStr, formatter);
+		} catch (DateTimeParseException e) {
+			System.out.println("Formato data non valido. Si prega di inserire la data nel formato YYYY-MM-DD.");
+			return;
+		}
 		System.out.println("Il programma è aperto a coalizione? (true/false):");
 		boolean coalitionOpen = scanner.nextBoolean();
 		scanner.nextLine();
 
 		LoyaltyProgram newProgram = merchantService.createLoyaltyProgram(loyaltyProgramName, loyaltyProgramDescription,
-				coalitionOpen, merchantId);
+				coalitionOpen, merchantId, expirationDate);
 		boolean addMoreLevels = true;
 		while (addMoreLevels) {
 
@@ -249,7 +268,9 @@ public class MerchantDashboard {
 
 	private void createBenefit(int merchantId) {
 
-		viewMerchantLoyaltyProgram(merchantId);
+		List<Partnership> lista = viewMerchantLoyaltyProgram(merchantId);
+		if (lista.isEmpty())
+			return;
 
 		System.out.print("Inserisci il codice del programma di fedeltà: ");
 		int programId = scanner.nextInt();
@@ -314,19 +335,23 @@ public class MerchantDashboard {
 		}
 
 		try {
-			merchantService.createBenefit(benefitType, benefitName, benefitDescription, pointsRequired, merchantId,
-					programId, levelId, additionalParams);
+			loyaltyProgramService.createBenefit(benefitType, benefitName, benefitDescription, pointsRequired,
+					merchantId, programId, levelId, additionalParams);
 
 			System.out.println("Benefit creato con successo");
 		} catch (IllegalArgumentException e) {
-		    System.out.println("Errore nella creazione del benefit: " + e.getMessage());
+			System.out.println("Errore nella creazione del benefit: " + e.getMessage());
 
 		}
-
 
 	}
 
 	public void createEmployee(int merchantId) {
+		boolean usernameChosen = false;
+		String password = null;
+		Merchant merchant = merchantRepository.findById(merchantId)
+				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
+		String username = null;
 		System.out.println("Creazione di un nuovo account dipendente.");
 
 		System.out.print("Inserisci il nome del dipendente: ");
@@ -334,12 +359,40 @@ public class MerchantDashboard {
 
 		System.out.print("Inserisci la matricola del dipendente: ");
 		String matricola = scanner.nextLine();
-		String username = "user";
-		String password = "password";
 
-		merchantService.createNewEmployee(merchantId, name, matricola, username, password);
+		while (!usernameChosen) {
+			System.out.print("Scegli una username per il dipendente: ");
+			username = scanner.nextLine();
+			Optional<Employee> employeeOptional = employeeRepository.findByUsername(username);
 
-		System.out.println("Dipendente creato con successo: " + name);
+			if (employeeOptional.isPresent()) {
+				Employee existingEmployee = employeeOptional.get();
+
+				if (existingEmployee.getMerchant().equals(merchant)) {
+					System.out.println(
+							"Hai già un dipendente con questa username. Vuoi procedere ad un reset password? (S per sì, altro per scegliere una nuova username)");
+					String choice = scanner.nextLine();
+					if ("S".equalsIgnoreCase(choice)) {
+						password = PasswordGenerator.generatePassword();
+						existingEmployee.setPassword(password);
+						employeeRepository.save(existingEmployee);
+						System.out.println("La nuova password è: "+password);
+						return;
+					}
+
+				} else {
+
+					System.out.println("Username non disponibile, sceglierne un'altra.");
+				}
+			} else {
+
+				password = PasswordGenerator.generatePassword();
+				merchantService.createNewEmployee(merchantId, name, matricola, username, password);
+				System.out.println("Dipendente creato con successo: " + name + " con username: " + username
+						+ " e password: " + password);
+				usernameChosen = true;
+			}
+		}
 	}
 
 	public Merchant insertMerchant() {
