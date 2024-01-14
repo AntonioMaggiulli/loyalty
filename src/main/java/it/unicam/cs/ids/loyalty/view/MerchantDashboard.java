@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -50,7 +51,6 @@ public class MerchantDashboard {
 	}
 
 	public void login() {
-
 		while (true) {
 			System.out.println("Elenco dei Merchant:");
 
@@ -59,8 +59,14 @@ public class MerchantDashboard {
 
 			System.out.println("Seleziona un Merchant (inserisci l'ID) o premi 0 per tornare al menu principale:");
 
-			int choice = scanner.nextInt();
-			scanner.nextLine();
+			int choice;
+			try {
+				choice = scanner.nextInt();
+				scanner.nextLine();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero intero.");
+				return;
+			}
 
 			if (choice == 0) {
 				return;
@@ -71,7 +77,6 @@ public class MerchantDashboard {
 			if (selectedMerchant != null) {
 				System.out.println("Merchant selezionato: " + selectedMerchant.getName());
 				displayOptions(choice);
-
 			} else {
 				System.out.println("Merchant non trovato. Riprova.");
 			}
@@ -90,13 +95,20 @@ public class MerchantDashboard {
 			System.out.println("1. Visualizza programma fedeltà");
 			System.out.println("2. Crea nuovo programma fedeltà");
 			System.out.println("3. Aderisci ad un Programma fedeltà in coalizione");
-			System.out.println("4. Aggiungi un Benefit al programma Fedeltà");
-			System.out.println("5. Visualizza Benefit di un programma Fedeltà");
-			System.out.println("6. Crea utenza per dipendente");
+			System.out.println("4. Gestisci i livelli dei tuoi programma Fedeltà");
+			System.out.println("5. Aggiungi un Benefit al programma Fedeltà");
+			System.out.println("6. Visualizza Benefit di un programma Fedeltà");
+			System.out.println("7. Crea utenza per dipendente");
 			System.out.println("0. Esci");
 
-			int option = scanner.nextInt();
-			scanner.nextLine();
+			int option;
+			try {
+				option = scanner.nextInt();
+				scanner.nextLine();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero intero.");
+				return;
+			}
 
 			switch (option) {
 			case 1:
@@ -109,12 +121,15 @@ public class MerchantDashboard {
 				joinCoalition(merchantId);
 				break;
 			case 4:
-				createBenefit(merchantId);
+				manageLevels(merchantId);
 				break;
 			case 5:
-				viewBenefit(merchantId);
+				createBenefit(merchantId);
 				break;
 			case 6:
+				viewBenefit(merchantId);
+				break;
+			case 7:
 				createEmployee(merchantId);
 				break;
 			case 0:
@@ -127,13 +142,192 @@ public class MerchantDashboard {
 		}
 	}
 
+	private void manageLevels(int merchantId) {
+		viewMerchantLoyaltyProgram(merchantId);
+
+		int programId = getProgramIdInput();
+
+		LoyaltyProgram program = getLoyaltyProgram(programId);
+		if (program == null) {
+			return;
+		}
+
+		List<Level> levels = getLevels(programId);
+		if (levels.isEmpty()) {
+			System.out.println("Nessun livello disponibile per il programma selezionato.");
+			return;
+		}
+
+		displayLevels(levels);
+
+		int choice = getOptionChoice();
+
+		switch (choice) {
+		case 1:
+			modifyExistingLevel(program);
+			break;
+		case 2:
+			addNewLevel(program);
+			break;
+		case 3:
+			System.out.println("Nessuna modifica effettuata.");
+			break;
+		default:
+			System.out.println("Opzione non valida. Riprova.");
+			break;
+		}
+	}
+
+	private void modifyExistingLevel(LoyaltyProgram program) {
+		int levelId;
+		try {
+			System.out.print("Inserisci l'ID del livello da modificare: ");
+			levelId = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
+
+		System.out.println("Quale attributo vuoi modificare?");
+		System.out.println("1. Nome del livello");
+		System.out.println("2. Descrizione del livello");
+		System.out.println("3. Soglia minima del livello");
+		System.out.println("4. Modifica tutto");
+
+		int choice;
+		try {
+			choice = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
+
+		String newLevelName = null;
+		String newLevelDescription = null;
+		Integer newThreshold = null;
+
+		switch (choice) {
+		case 1:
+			System.out.print("Inserisci il nuovo nome del livello: ");
+			newLevelName = scanner.nextLine();
+			break;
+		case 2:
+			System.out.print("Inserisci la nuova descrizione del livello: ");
+			newLevelDescription = scanner.nextLine();
+			break;
+		case 3:
+			System.out.print("Inserisci la nuova soglia minima del livello: ");
+			try {
+				newThreshold = scanner.nextInt();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero intero.");
+				return;
+			}
+			break;
+		case 4:
+			System.out.print("Inserisci il nuovo nome del livello: ");
+			newLevelName = scanner.nextLine();
+
+			System.out.print("Inserisci la nuova descrizione del livello: ");
+			newLevelDescription = scanner.nextLine();
+
+			System.out.print("Inserisci la nuova soglia minima del livello: ");
+			try {
+				newThreshold = scanner.nextInt();
+				scanner.nextLine();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero intero.");
+				return;
+			}
+			break;
+		default:
+			System.out.println("Opzione non valida. Riprova.");
+			return;
+		}
+
+		try {
+			loyaltyProgramService.updateLevel(levelId, newLevelName, newLevelDescription, newThreshold);
+			System.out.println("Livello modificato con successo.");
+		} catch (IllegalArgumentException e) {
+			System.out.println("Errore nella modifica del livello: " + e.getMessage());
+		}
+	}
+
+	private int getProgramIdInput() {
+		try {
+			System.out.print("Inserisci il codice del programma di fedeltà: ");
+			return scanner.nextInt();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return -1;
+		} finally {
+			scanner.nextLine();
+		}
+	}
+
+	private LoyaltyProgram getLoyaltyProgram(int programId) {
+		try {
+			return loyaltyProgramService.getById(programId)
+					.orElseThrow(() -> new RuntimeException("Programma di fedeltà non trovato."));
+		} catch (RuntimeException e) {
+			System.out.println(e.getMessage());
+			return null;
+		}
+	}
+
+	private List<Level> getLevels(int programId) {
+		try {
+			return loyaltyProgramService.getLevelsOfLoyaltyProgram(programId);
+		} catch (RuntimeException e) {
+			System.out.println("Errore nella lettura dei livelli del programma di fedeltà: " + e.getMessage());
+			return Collections.emptyList();
+		}
+	}
+
+	private void displayLevels(List<Level> levels) {
+		System.out.println("Livelli nel programma selezionato:");
+		levels.forEach(level -> System.out.println("Codice Livello: " + level.getId() + ", Nome: " + level.getName()
+				+ ", Soglia minima: " + level.getPointsThreshold()));
+	}
+
+	private int getOptionChoice() {
+		try {
+			System.out.println("Seleziona un'opzione:");
+			System.out.println("1. Modifica un livello esistente");
+			System.out.println("2. Aggiungi un nuovo livello");
+			System.out.println("3. Non apportare modifiche");
+			return scanner.nextInt();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return -1;
+		} finally {
+			scanner.nextLine();
+		}
+	}
+
 	private void viewBenefit(int merchantId) {
 		viewMerchantLoyaltyProgram(merchantId);
-		System.out.print("Inserisci il codice del programma di fedeltà: ");
-		int programId = scanner.nextInt();
 
-		LoyaltyProgram program = loyaltyProgramService.getById(programId)
-				.orElseThrow(() -> new RuntimeException("Programma di fedeltà non trovato."));
+		int programId;
+		try {
+			System.out.print("Inserisci il codice del programma di fedeltà: ");
+			programId = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
+
+		LoyaltyProgram program;
+		try {
+			program = loyaltyProgramService.getById(programId)
+					.orElseThrow(() -> new RuntimeException("Programma di fedeltà non trovato."));
+		} catch (RuntimeException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
 
 		Map<Integer, List<Benefit>> benefitsByLevel = loyaltyProgramService.getBenefitsByLoyaltyProgram(programId);
 
@@ -149,7 +343,6 @@ public class MerchantDashboard {
 				}
 			}
 		}
-
 	}
 
 	@Transactional
@@ -181,7 +374,7 @@ public class MerchantDashboard {
 		System.out.print("Scegli il numero della coalizione a cui vuoi aderire (0 per uscire): ");
 		try {
 			int choice = scanner.nextInt();
-			scanner.nextLine(); // Pulizia del buffer dopo la lettura di un numero
+			scanner.nextLine();
 
 			if (choice == 0) {
 				System.out.println("Uscita dalla procedura di adesione.");
@@ -196,7 +389,7 @@ public class MerchantDashboard {
 			System.out.println("Adesione avvenuta con successo alla coalizione: " + selectedProgram.getProgramName());
 		} catch (InputMismatchException e) {
 			System.out.println("Errore: input non valido. Inserisci un numero.");
-			scanner.nextLine(); // Pulizia del buffer
+			scanner.nextLine();
 		}
 	}
 
@@ -219,7 +412,14 @@ public class MerchantDashboard {
 
 	private void createLoyaltyProgram(int merchantId) {
 		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+
+		if (merchant == null) {
+			System.out.println("Merchant non trovato.");
+			return;
+		}
+
 		System.out.println("Creazione di un nuovo programma fedeltà per " + merchant.getName());
+
 		System.out.println("Inserisci il nome del programma fedeltà:");
 		String loyaltyProgramName = scanner.nextLine();
 
@@ -237,52 +437,105 @@ public class MerchantDashboard {
 			System.out.println("Formato data non valido. Si prega di inserire la data nel formato YYYY-MM-DD.");
 			return;
 		}
+
 		System.out.println("Il programma è aperto a coalizione? (true/false):");
-		boolean coalitionOpen = scanner.nextBoolean();
-		scanner.nextLine();
-
-		LoyaltyProgram newProgram = merchantService.createLoyaltyProgram(loyaltyProgramName, loyaltyProgramDescription,
-				coalitionOpen, merchantId, expirationDate);
-		boolean addMoreLevels = true;
-		while (addMoreLevels) {
-
-			System.out.println("Definisci un nome per il livello di fedeltà del programma:");
-			String levelName = scanner.nextLine();
-
-			System.out.println("Definisci una breve descrizione per il livello:");
-			String levelDescription = scanner.nextLine();
-
-			System.out.println("Definisci una soglia minima per questo livello:");
-			int levelThreshold = scanner.nextInt();
-
-			loyaltyProgramService.createLevel(newProgram.getId(), levelName, levelDescription, levelThreshold);
-
-			System.out.println("Vuoi aggiungere un altro livello? (true/false):");
-			addMoreLevels = scanner.nextBoolean();
+		boolean coalitionOpen;
+		try {
+			coalitionOpen = scanner.nextBoolean();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci true o false.");
+			return;
+		} finally {
 			scanner.nextLine();
 		}
 
-		System.out.println("Programma fedeltà creato con successo con i livelli definiti.");
+		LoyaltyProgram newProgram = merchantService.createLoyaltyProgram(loyaltyProgramName, loyaltyProgramDescription,
+				coalitionOpen, merchantId, expirationDate);
 
+		createLevelsForProgram(newProgram);
+
+		System.out.println("Programma fedeltà creato con successo con i livelli definiti.");
+	}
+
+	private void createLevelsForProgram(LoyaltyProgram program) {
+		boolean addMoreLevels = true;
+		while (addMoreLevels) {
+			try {
+				addNewLevel(program);
+			} catch (IllegalArgumentException e) {
+		            System.out.println("Errore: " + e.getMessage());
+		            System.out.println("Inserisci una soglia diversa per il livello.");
+			}
+
+			try {
+				System.out.println("Vuoi aggiungere un altro livello? (true/false):");
+				addMoreLevels = scanner.nextBoolean();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci true o false.");
+				return;
+			} finally {
+				scanner.nextLine();
+			}
+		}
+	}
+
+	private void addNewLevel(LoyaltyProgram program) {
+		System.out.println("Definisci un nome per il livello di fedeltà del programma:");
+		String levelName = scanner.nextLine();
+
+		System.out.println("Definisci una breve descrizione per il livello:");
+		String levelDescription = scanner.nextLine();
+
+		int levelThreshold;
+		try {
+			System.out.println("Definisci una soglia minima per questo livello:");
+			levelThreshold = scanner.nextInt();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		} finally {
+			scanner.nextLine();
+		}
+
+		loyaltyProgramService.createLevel(program.getId(), levelName, levelDescription, levelThreshold);
 	}
 
 	private void createBenefit(int merchantId) {
-
 		List<Partnership> lista = viewMerchantLoyaltyProgram(merchantId);
 		if (lista.isEmpty())
 			return;
 
 		System.out.print("Inserisci il codice del programma di fedeltà: ");
-		int programId = scanner.nextInt();
+		int programId;
+		try {
+			programId = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
 
 		System.out.println("Livelli nel programma selezionato:");
-		List<Level> levels = loyaltyProgramService.getLevelsOfLoyaltyProgram(programId);
-		levels.forEach(level -> System.out.println("Codice Livello: " + level.getId() + ", Nome: " + level.getName()));
+		List<Level> levels;
+		try {
+			levels = loyaltyProgramService.getLevelsOfLoyaltyProgram(programId);
+			levels.forEach(
+					level -> System.out.println("Codice Livello: " + level.getId() + ", Nome: " + level.getName()));
+		} catch (RuntimeException e) {
+			System.out.println("Errore nella lettura dei livelli del programma di fedeltà: " + e.getMessage());
+			return;
+		}
 
 		System.out.print("Inserisci il codice del livello di fedeltà (0 per qualsiasi livello): ");
-		int levelId = scanner.nextInt();
+		int levelId;
+		try {
+			levelId = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
 
-		scanner.nextLine();
 		System.out.print("Inserisci il nome del benefit: ");
 		String benefitName = scanner.nextLine();
 
@@ -290,7 +543,14 @@ public class MerchantDashboard {
 		String benefitDescription = scanner.nextLine();
 
 		System.out.print("Inserisci i punti necessari per il benefit (0 se non applicabile): ");
-		int pointsRequired = scanner.nextInt();
+		int pointsRequired;
+		try {
+			pointsRequired = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
 
 		System.out.print("Scegli il tipo di benefit (COUPON, CASHBACK, REWARD, POINTS_REWARD): ");
 		String benefitType = scanner.next().toUpperCase();
@@ -302,8 +562,7 @@ public class MerchantDashboard {
 			System.out.print("Inserisci la data di scadenza del coupon (YYYY-MM-DD): ");
 			String expirationDateString = scanner.next();
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			Date expirationDate = null;
-
+			Date expirationDate;
 			try {
 				expirationDate = dateFormat.parse(expirationDateString);
 			} catch (ParseException e) {
@@ -314,19 +573,43 @@ public class MerchantDashboard {
 			break;
 		case "CASHBACK":
 			System.out.print("Inserisci il tasso di cashback (es. 12,5 per 12,5%): ");
-			double cashBackRate = scanner.nextDouble() / 100;
+			double cashBackRate;
+			try {
+				cashBackRate = scanner.nextDouble() / 100;
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero.");
+				return;
+			}
 			additionalParams = new Object[] { cashBackRate };
 			break;
 		case "REWARD":
 			System.out.print("Inserisci la quantità disponibile del premio: ");
-			int quantity = scanner.nextInt();
+			int quantity;
+			try {
+				quantity = scanner.nextInt();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero intero.");
+				return;
+			}
 			additionalParams = new Object[] { quantity };
 			break;
 		case "POINTS_REWARD":
 			System.out.print("Quanti punti verranno guadagnati?: ");
-			int points = scanner.nextInt();
+			int points;
+			try {
+				points = scanner.nextInt();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero intero.");
+				return;
+			}
 			System.out.print("Per quale importo speso?: ");
-			double moneySpent = scanner.nextDouble();
+			double moneySpent;
+			try {
+				moneySpent = scanner.nextDouble();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero.");
+				return;
+			}
 			additionalParams = new Object[] { points, moneySpent };
 			break;
 		default:
@@ -341,9 +624,7 @@ public class MerchantDashboard {
 			System.out.println("Benefit creato con successo");
 		} catch (IllegalArgumentException e) {
 			System.out.println("Errore nella creazione del benefit: " + e.getMessage());
-
 		}
-
 	}
 
 	public void createEmployee(int merchantId) {
@@ -376,7 +657,7 @@ public class MerchantDashboard {
 						password = PasswordGenerator.generatePassword();
 						existingEmployee.setPassword(password);
 						employeeRepository.save(existingEmployee);
-						System.out.println("La nuova password è: "+password);
+						System.out.println("La nuova password è: " + password);
 						return;
 					}
 
@@ -386,7 +667,7 @@ public class MerchantDashboard {
 				}
 			} else {
 
-				password = PasswordGenerator.generatePassword();
+
 				merchantService.createNewEmployee(merchantId, name, matricola, username, password);
 				System.out.println("Dipendente creato con successo: " + name + " con username: " + username
 						+ " e password: " + password);

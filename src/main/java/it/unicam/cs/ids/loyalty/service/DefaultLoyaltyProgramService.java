@@ -160,19 +160,28 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 	@Transactional
 	public Level createLevel(int loyaltyProgramId, String levelName, String levelDescription, int threshold) {
+	    LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
+	            .orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
+	    
+	    try {
+	        if (!loyaltyProgram.getLevels().isEmpty()) {
+	            validateThreshold(loyaltyProgram.getLevels(), threshold);
+	        }
 
-		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
-				.orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
+	        Level newLevel = new Level(levelName, levelDescription, loyaltyProgram, threshold);
+	        Level savedLevel = levelRepository.save(newLevel);
 
-		Level newLevel = new Level(levelName, levelDescription, loyaltyProgram, threshold);
+	        loyaltyProgram.getLevels().add(savedLevel);
+	        loyaltyProgramRepository.save(loyaltyProgram);
 
-		Level savedLevel = levelRepository.save(newLevel);
-
-		loyaltyProgram.getLevels().add(savedLevel);
-		loyaltyProgramRepository.save(loyaltyProgram);
-
-		return savedLevel;
+	        return savedLevel;
+	    } catch (IllegalArgumentException e) {
+	        
+	        System.out.println("Errore durante la validazione della soglia: " + e.getMessage());
+	        return null; 
+	    }
 	}
+
 
 	@Transactional
 	public List<Level> getLevelsOfLoyaltyProgram(int programId) {
@@ -288,4 +297,38 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 			benefitRepository.save(benefit);
 		}
 	}
-}
+
+
+	public Level updateLevel(int levelId, String newLevelName, String newLevelDescription, Integer newThreshold) {
+        Level existingLevel = levelRepository.findById(levelId)
+                .orElseThrow(() -> new IllegalArgumentException("Livello di fedeltà non trovato."));
+
+        validateThreshold(existingLevel.getLoyaltyProgram().getLevels(), newThreshold);
+
+        if (newLevelName != null) {
+            existingLevel.setName(newLevelName);
+        }
+
+        if (newLevelDescription != null) {
+            existingLevel.setDescription(newLevelDescription);
+        }
+
+        if (newThreshold != null) {
+            existingLevel.setPointsThreshold(newThreshold);
+        }
+
+        return levelRepository.save(existingLevel);
+    }
+
+    private void validateThreshold(List<Level> existingLevels, Integer newThreshold) {
+        if (newThreshold != null) {
+            for (Level level : existingLevels) {
+                if (level.getPointsThreshold() == newThreshold) {
+                    throw new IllegalArgumentException("Soglia duplicata. Impossibile aggiornare il livello.");
+                }
+            }
+        }
+    }
+		
+	}
+

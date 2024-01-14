@@ -74,7 +74,7 @@ public class EmployeeDashboard {
 			System.out.println("Seleziona un'opzione:");
 			System.out.println("1. Convalida acquisto");
 			System.out.println("2. Ricerca Cliente");
-			System.out.println("3. da implementare");
+			System.out.println("3. Sostituzione Tessera");
 			System.out.println("0. Esci");
 			int option = 9;
 			try {
@@ -94,6 +94,9 @@ public class EmployeeDashboard {
 				Map<LoyaltyProgram, List<Membership>> result = searchCustomer(merchantId);
 				printCustomersInfo(result);
 				break;
+			case 3:
+                replaceMembershipCard();
+                break;
 			case 0:
 				System.out.println("Arrivederci!");
 				return;
@@ -102,6 +105,35 @@ public class EmployeeDashboard {
 				break;
 			}
 		}
+	}
+
+	private void replaceMembershipCard() {
+		searchCustomer(merchantId);
+		handleCustomerSearch(scanner);
+		
+		/*System.out.println("Inserisci il numero della tessera del cliente da sostituire:");
+	    String oldCardNumber = scanner.nextLine();
+
+	    // Effettua la ricerca della tessera da sostituire
+	    Membership oldMembership = loyaltyProgramService.findMembershipByCardNumber(oldCardNumber, merchantId);
+
+	    if (oldMembership == null) {
+	        System.out.println("La tessera specificata non è associata a nessun cliente.");
+	        return;
+	    }
+
+	    System.out.println("Inserisci il codice seriale della nuova tessera:");
+	    String newCardSerial = scanner.nextLine();
+
+	    // Effettua la sostituzione della tessera
+	    boolean success = loyaltyProgramService.replaceMembershipCard(oldMembership, newCardSerial);
+
+	    if (success) {
+	        System.out.println("La tessera è stata sostituita con successo. Nuovo numero di tessera: " + newCardSerial);
+	    } else {
+	        System.out.println("Si è verificato un errore durante la sostituzione della tessera.");
+	    }
+	}*/
 	}
 
 	private Map<LoyaltyProgram, List<Membership>> searchCustomer(int merchantId) {
@@ -155,7 +187,7 @@ public class EmployeeDashboard {
 				List<Membership> memberships = entry.getValue();
 
 				if (!memberships.isEmpty()) {
-					System.out.println("Programma di fedeltà: " + program.getProgramName());
+					System.out.println("Programma fedeltà: " + program.getProgramName());
 					for (Membership membership : memberships) {
 						if (membership.getMemberCard().isCardValid()) {
 							Customer customer = membership.getCustomer();
