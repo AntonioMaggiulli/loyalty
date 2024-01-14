@@ -244,17 +244,21 @@ public class CustomerDashboard {
 				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
 		String cardString = membership.getMemberCard().getCardNumber();
 
-		System.out.println("il tuo saldo disponibile è " + membership.getAccount().getLoyaltyPoints());
-
+		//System.out.println("il tuo saldo disponibile è " + membership.getAccount().getCurrentPoints());
+		
+		if (!benefit.getAssociatedLevel().equals(membership.getCurrentLevel())) {
+			System.out.println("Il Benefit non è applicabile al tuo livello di fedeltà");
+			return;
+		}
+		
 		if (!benefit.isEligibleForRedemption(membership.getAccount())) {
 			System.out.println("Punti insufficienti oppure il premio non è più disponibile");
-
 			return;
 		}
 
 		int merchantId = benefit.getOfferingMerchant().getId();
-		loyaltyProgramService.createTransaction(type, merchantId, 0, cardString);
-		System.out.println("Premio Riscattato, il tuo nuovo saldo è " + membership.getAccount().getLoyaltyPoints());
+		loyaltyProgramService.createTransaction(type, benefit, 0, cardString);
+		System.out.println("Premio Riscattato, il tuo nuovo saldo è " + membership.getAccount().getCurrentPoints());
 	}
 
 	private void viewBenefit(int customerId) {

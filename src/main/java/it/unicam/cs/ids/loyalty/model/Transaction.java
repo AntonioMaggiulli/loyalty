@@ -1,6 +1,7 @@
 package it.unicam.cs.ids.loyalty.model;
 
 import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 /**
@@ -22,6 +23,9 @@ public class Transaction {
 	private double moneySpent;
 	private LocalDateTime timestamp;
 
+	@Enumerated(EnumType.STRING)
+	private RewardStatus status;
+
 	@ManyToOne
 	@JoinColumn(name = "membership_account_id")
 	private MembershipAccount membershipAccount;
@@ -35,6 +39,12 @@ public class Transaction {
 		this.moneySpent = eurosSpent;
 		this.membershipAccount = account;
 		this.timestamp = LocalDateTime.now();
+		if (loyaltyBenefit instanceof Reward) {
+			this.status = RewardStatus.PENDING;
+		} else if (loyaltyBenefit instanceof PointsReward || loyaltyBenefit instanceof Cashback
+				|| loyaltyBenefit instanceof Coupon) {
+			this.status = RewardStatus.DELIVERED;
+		}
 	}
 
 	/**
@@ -122,5 +132,23 @@ public class Transaction {
 
 	public void setMembershipAccount(MembershipAccount membershipAccount) {
 		this.membershipAccount = membershipAccount;
+	}
+
+	/**
+	 * Restituisce lo stato della transazione.
+	 *
+	 * @return Lo stato della transazione.
+	 */
+	public RewardStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * Imposta lo stato della transazione.
+	 *
+	 * @param status Lo stato da impostare.
+	 */
+	public void setStatus(RewardStatus status) {
+		this.status = status;
 	}
 }

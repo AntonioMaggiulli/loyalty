@@ -542,7 +542,7 @@ public class MerchantDashboard {
 		System.out.print("Inserisci una descrizione per il benefit: ");
 		String benefitDescription = scanner.nextLine();
 
-		System.out.print("Inserisci i punti necessari per il benefit (0 se non applicabile): ");
+		System.out.print("Inserisci i punti necessari per il benefit (0 se non sono richiesti punti da spendere): ");
 		int pointsRequired;
 		try {
 			pointsRequired = scanner.nextInt();

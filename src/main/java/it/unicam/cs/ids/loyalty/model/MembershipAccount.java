@@ -124,4 +124,20 @@ public class MembershipAccount {
 		}
 	}
 
+	public int getCurrentPoints() {
+		return currentPoints;
+	}
+
+	public void setCurrentPoints(int currentPoints) {
+		this.currentPoints = currentPoints;
+	}
+
+	public int getTotalPointsEarned() {
+		return totalPointsEarned;
+	}
+
+	public void setTotalPointsEarned(int totalPointsEarned) {
+		this.totalPointsEarned = totalPointsEarned;
+	}
+
 }

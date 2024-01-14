@@ -3,23 +3,31 @@ package it.unicam.cs.ids.loyalty.view;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import ch.qos.logback.core.joran.conditional.IfAction;
+import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.model.Employee;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
+import it.unicam.cs.ids.loyalty.model.MemberCard;
 import it.unicam.cs.ids.loyalty.model.Membership;
 import it.unicam.cs.ids.loyalty.model.Merchant;
+import it.unicam.cs.ids.loyalty.model.Transaction;
+import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
+import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultCustomerService;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
 import it.unicam.cs.ids.loyalty.service.DefaultMembershipService;
 import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
+import jakarta.transaction.Transactional;
 import jakarta.websocket.ClientEndpoint;
 
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
 @Component
@@ -27,6 +35,8 @@ public class EmployeeDashboard {
 
 	private final EmployeeRepository employeeRepository;
 	private final MerchantRepository merchantRepository;
+	private final BenefitRepository benefitRepository;
+	private final MemberCardRepository memberCardRepository;
 	@Autowired
 	private DefaultMerchantService merchantService;
 	private DefaultCustomerService customerService;
@@ -39,9 +49,12 @@ public class EmployeeDashboard {
 	private int merchantId;
 
 	@Autowired
-	public EmployeeDashboard(EmployeeRepository employeeRepository, MerchantRepository merchantRepository) {
+	public EmployeeDashboard(EmployeeRepository employeeRepository, MerchantRepository merchantRepository,
+			BenefitRepository benefitRepository, MemberCardRepository memberCardRepository) {
 		this.employeeRepository = employeeRepository;
 		this.merchantRepository = merchantRepository;
+		this.benefitRepository = benefitRepository;
+		this.memberCardRepository = memberCardRepository;
 	}
 
 	public void login() {
@@ -79,7 +92,7 @@ public class EmployeeDashboard {
 			int option = 9;
 			try {
 				option = scanner.nextInt();
-				// Processa l'input
+
 			} catch (InputMismatchException e) {
 				System.out.println("Errore: per favore inserisci un numero intero.");
 				scanner.next();
@@ -95,8 +108,8 @@ public class EmployeeDashboard {
 				printCustomersInfo(result);
 				break;
 			case 3:
-                replaceMembershipCard();
-                break;
+				replaceMembershipCard();
+				break;
 			case 0:
 				System.out.println("Arrivederci!");
 				return;
@@ -108,32 +121,18 @@ public class EmployeeDashboard {
 	}
 
 	private void replaceMembershipCard() {
-		searchCustomer(merchantId);
-		handleCustomerSearch(scanner);
-		
-		/*System.out.println("Inserisci il numero della tessera del cliente da sostituire:");
-	    String oldCardNumber = scanner.nextLine();
 
-	    // Effettua la ricerca della tessera da sostituire
-	    Membership oldMembership = loyaltyProgramService.findMembershipByCardNumber(oldCardNumber, merchantId);
+		String oldCardNumber = handleCustomerSearch(scanner);
+		System.out.print("\nInserisci il codice seriale della tessera da associare :");
+		String newCardNumber = scanner.nextLine();
+		boolean success = loyaltyProgramService.replaceCard(oldCardNumber, newCardNumber);
 
-	    if (oldMembership == null) {
-	        System.out.println("La tessera specificata non è associata a nessun cliente.");
-	        return;
-	    }
+		if (success) {
+			System.out.println("La tessera è stata sostituita con successo. Nuovo numero di tessera: " + newCardNumber);
+		} else {
+			System.out.println("Si è verificato un errore durante la sostituzione della tessera.");
+		}
 
-	    System.out.println("Inserisci il codice seriale della nuova tessera:");
-	    String newCardSerial = scanner.nextLine();
-
-	    // Effettua la sostituzione della tessera
-	    boolean success = loyaltyProgramService.replaceMembershipCard(oldMembership, newCardSerial);
-
-	    if (success) {
-	        System.out.println("La tessera è stata sostituita con successo. Nuovo numero di tessera: " + newCardSerial);
-	    } else {
-	        System.out.println("Si è verificato un errore durante la sostituzione della tessera.");
-	    }
-	}*/
 	}
 
 	private Map<LoyaltyProgram, List<Membership>> searchCustomer(int merchantId) {
@@ -141,7 +140,22 @@ public class EmployeeDashboard {
 		System.out.println("Seleziona il criterio di ricerca:");
 		System.out.println("1. Per cognome");
 		System.out.println("2. Per codice fiscale");
-		int searchOption = scanner.nextInt();
+		int searchOption = 0;
+
+		while (true) {
+			try {
+				if (scanner.hasNextInt()) {
+					searchOption = scanner.nextInt();
+					break;
+				} else {
+					scanner.nextLine();
+					System.out.println("Input non valido. Inserisci un numero.");
+				}
+			} catch (InputMismatchException e) {
+				scanner.nextLine();
+				System.out.println("Input non valido. Inserisci un numero.");
+			}
+		}
 		scanner.nextLine();
 
 		switch (searchOption) {
@@ -187,14 +201,18 @@ public class EmployeeDashboard {
 				List<Membership> memberships = entry.getValue();
 
 				if (!memberships.isEmpty()) {
-					System.out.println("Programma fedeltà: " + program.getProgramName());
+
 					for (Membership membership : memberships) {
 						if (membership.getMemberCard().isCardValid()) {
 							Customer customer = membership.getCustomer();
-							System.out.println("\n--------------" + program.getProgramName() + "------------\n"
+							System.out.println("\n-------------------------------------------------------------------\n"
+									+ "--------------" + program.getProgramName() + "------------\n"
+									+ "---------------------------------------------------------------------\n"
 									+ "ID Tessera: " + membership.getMemberCard().getCardNumber() + ", Nome: "
 									+ customer.getNome() + ", Cognome: " + customer.getCognome() + ", Codice Fiscale: "
-									+ customer.getCodiceFiscale());
+									+ customer.getCodiceFiscale() + ", Livello Fedeltà: "
+									+ membership.getCurrentLevel().getName() + ", Punti totali: "
+									+ membership.getAccount().getLoyaltyPoints());
 						}
 					}
 				}
@@ -235,11 +253,16 @@ public class EmployeeDashboard {
 				amount = scanner.nextDouble();
 			} catch (InputMismatchException e) {
 				System.out.println("Input non valido. Inserisci un numero decimale secondo la notazione locale(,).");
-				scanner.next(); // Pulisce l'input errato dallo scanner
-				continue; // Riprende il ciclo while
+				scanner.next();
+				continue;
 			}
 			String type = "POINTS_REWARD";
-			loyaltyProgramService.createTransaction(type, merchantId, amount, cardString);
+			Transaction transaction = loyaltyProgramService.createTransaction(type, merchantId, amount, cardString);
+			if (transaction == null)
+				System.out.println("transazione non creata");
+			else
+				System.out.println("Punti convalidati: " + transaction.getPointsEarned() + "; il nuovo saldo punti è "
+						+ transaction.getMembershipAccount().getCurrentPoints());
 		}
 	}
 

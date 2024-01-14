@@ -36,7 +36,8 @@ public interface BenefitRepository extends JpaRepository<Benefit, Integer> {
 
 	List<Benefit> findByAssociatedLevel(Level level);
 
-	Optional<Benefit> findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(String type,
+	List<Benefit> findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(String type,
 			int loyaltyProgramId, int offeringMerchantId, int associatedLevelId);
+
 
 }

@@ -60,7 +60,8 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	public DefaultLoyaltyProgramService(LoyaltyProgramRepository loyaltyProgramRepository,
 			CustomerRepository customerRepository, PartnershipRepository partnershipRepository,
 			LevelRepository levelRepository, BenefitRepository benefitRepository,
-			MembershipRepository membershipRepository, MemberCardRepository memberCardRepository, DefaultMerchantService merchantService) {
+			MembershipRepository membershipRepository, MemberCardRepository memberCardRepository,
+			DefaultMerchantService merchantService) {
 		this.merchantService = merchantService;
 		this.loyaltyProgramRepository = loyaltyProgramRepository;
 		this.customerRepository = customerRepository;
@@ -160,28 +161,27 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 	@Transactional
 	public Level createLevel(int loyaltyProgramId, String levelName, String levelDescription, int threshold) {
-	    LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
-	            .orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
-	    
-	    try {
-	        if (!loyaltyProgram.getLevels().isEmpty()) {
-	            validateThreshold(loyaltyProgram.getLevels(), threshold);
-	        }
+		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
+				.orElseThrow(() -> new IllegalArgumentException("Programma fedeltà non trovato."));
 
-	        Level newLevel = new Level(levelName, levelDescription, loyaltyProgram, threshold);
-	        Level savedLevel = levelRepository.save(newLevel);
+		try {
+			if (!loyaltyProgram.getLevels().isEmpty()) {
+				validateThreshold(loyaltyProgram.getLevels(), threshold);
+			}
 
-	        loyaltyProgram.getLevels().add(savedLevel);
-	        loyaltyProgramRepository.save(loyaltyProgram);
+			Level newLevel = new Level(levelName, levelDescription, loyaltyProgram, threshold);
+			Level savedLevel = levelRepository.save(newLevel);
 
-	        return savedLevel;
-	    } catch (IllegalArgumentException e) {
-	        
-	        System.out.println("Errore durante la validazione della soglia: " + e.getMessage());
-	        return null; 
-	    }
+			loyaltyProgram.getLevels().add(savedLevel);
+			loyaltyProgramRepository.save(loyaltyProgram);
+
+			return savedLevel;
+		} catch (IllegalArgumentException e) {
+
+			System.out.println("Errore durante la validazione della soglia: " + e.getMessage());
+			return null;
+		}
 	}
-
 
 	@Transactional
 	public List<Level> getLevelsOfLoyaltyProgram(int programId) {
@@ -246,8 +246,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 		return programCustomerMap;
 	}
-
-	public void createTransaction(String type, int merchantId, double amount, String cardString) {
+	public Transaction createTransaction(String type, int merchantId, double amount, String cardString) {
 		MemberCard card = memberCardRepository.findByCardNumber(cardString)
 				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata."));
 		Membership membership = membershipRepository.findByMemberCard(card)
@@ -256,8 +255,28 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		int levelId = membership.getCurrentLevel().getId();
 
 		Benefit benefit = benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
-				loyaltyProgramId, merchantId, levelId)
-				.orElseThrow(() -> new IllegalArgumentException("Benefit non trovato."));
+				loyaltyProgramId, merchantId, levelId).get(0);
+		MembershipAccount account = membership.getAccount();
+
+		Transaction transaction = new Transaction(benefit, amount, account);
+
+		benefit.applyBenefit(transaction);
+
+		transactionRepository.save(transaction);
+		benefitRepository.save(benefit);
+
+		account.updatePoints(transaction);
+		account.checkUpgradeForLevel(benefit.getLoyaltyProgram());
+		membershipAccountRepository.save(account);
+		return transaction;
+		}
+	
+	public void createTransaction(String type, Benefit benefit, double amount, String cardString) {
+		MemberCard card = memberCardRepository.findByCardNumber(cardString)
+				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata."));
+		Membership membership = membershipRepository.findByMemberCard(card)
+				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
+		
 		MembershipAccount account = membership.getAccount();
 
 		Transaction transaction = new Transaction(benefit, amount, account);
@@ -271,6 +290,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		account.checkUpgradeForLevel(benefit.getLoyaltyProgram());
 		membershipAccountRepository.save(account);
 	}
+
 	public void createBenefit(String type, String name, String description, int pointsRequired, int merchantId,
 			int loyaltyProgramId, int levelId, Object... additionalParams) {
 		Merchant offeringMerchant = merchantService.getById(merchantId)
@@ -285,8 +305,8 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		for (Level level : associatedLevels) {
 
 			if (type.equals("POINTS_REWARD")
-					&& benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
-							loyaltyProgramId, merchantId, level.getId()).isPresent()) {
+					&& !benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
+							loyaltyProgramId, merchantId, level.getId()).isEmpty()) {
 				throw new IllegalArgumentException(
 						"Un Benefit di tipo PointsReward esiste già per questo livello fedeltà.");
 			}
@@ -298,37 +318,54 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		}
 	}
 
-
 	public Level updateLevel(int levelId, String newLevelName, String newLevelDescription, Integer newThreshold) {
-        Level existingLevel = levelRepository.findById(levelId)
-                .orElseThrow(() -> new IllegalArgumentException("Livello di fedeltà non trovato."));
+		Level existingLevel = levelRepository.findById(levelId)
+				.orElseThrow(() -> new IllegalArgumentException("Livello di fedeltà non trovato."));
 
-        validateThreshold(existingLevel.getLoyaltyProgram().getLevels(), newThreshold);
+		validateThreshold(existingLevel.getLoyaltyProgram().getLevels(), newThreshold);
 
-        if (newLevelName != null) {
-            existingLevel.setName(newLevelName);
-        }
+		if (newLevelName != null) {
+			existingLevel.setName(newLevelName);
+		}
 
-        if (newLevelDescription != null) {
-            existingLevel.setDescription(newLevelDescription);
-        }
+		if (newLevelDescription != null) {
+			existingLevel.setDescription(newLevelDescription);
+		}
 
-        if (newThreshold != null) {
-            existingLevel.setPointsThreshold(newThreshold);
-        }
+		if (newThreshold != null) {
+			existingLevel.setPointsThreshold(newThreshold);
+		}
 
-        return levelRepository.save(existingLevel);
-    }
-
-    private void validateThreshold(List<Level> existingLevels, Integer newThreshold) {
-        if (newThreshold != null) {
-            for (Level level : existingLevels) {
-                if (level.getPointsThreshold() == newThreshold) {
-                    throw new IllegalArgumentException("Soglia duplicata. Impossibile aggiornare il livello.");
-                }
-            }
-        }
-    }
-		
+		return levelRepository.save(existingLevel);
 	}
 
+	private void validateThreshold(List<Level> existingLevels, Integer newThreshold) {
+		if (newThreshold != null) {
+			for (Level level : existingLevels) {
+				if (level.getPointsThreshold() == newThreshold) {
+					throw new IllegalArgumentException("Soglia duplicata. Impossibile aggiornare il livello.");
+				}
+			}
+		}
+	}
+
+	public boolean replaceCard(String oldCard, String newCard) {
+
+		if (oldCard == null || newCard == null) {
+			throw new IllegalArgumentException("I parametri non possono essere nulli.");
+		}
+
+		MemberCard oldMemberCard = memberCardRepository.findByCardNumber(oldCard)
+				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata con il numero specificato."));
+
+		MemberCard existingNewMemberCard = memberCardRepository.findByCardNumber(newCard).orElse(null);
+		if (existingNewMemberCard != null) {
+			throw new IllegalStateException("La nuova carta è già stata assegnata a un'altra MemberCard.");
+		}
+		oldMemberCard.setCardNumber(newCard);
+		memberCardRepository.save(oldMemberCard);
+
+		return true;
+	}
+
+}
