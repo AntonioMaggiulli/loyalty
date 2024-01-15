@@ -26,7 +26,7 @@ public class MembershipAccount {
 	// servirà per determinare il
 	// livello di fedeltà
 	private int totalPointsEarned = 0;
-	@OneToMany(mappedBy = "membershipAccount", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "membershipAccount", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<Transaction> transactions;
 
 	public MembershipAccount() {
@@ -120,7 +120,6 @@ public class MembershipAccount {
 
 		if (!nextLevel.equals(getMembership().getCurrentLevel())) {
 			getMembership().setCurrentLevel(nextLevel);
-
 		}
 	}
 
@@ -139,5 +138,4 @@ public class MembershipAccount {
 	public void setTotalPointsEarned(int totalPointsEarned) {
 		this.totalPointsEarned = totalPointsEarned;
 	}
-
 }
