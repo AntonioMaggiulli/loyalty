@@ -33,8 +33,8 @@ public class Coupon extends Benefit {
 
 	@Override
 	public void applyBenefit(Transaction transaction) {
-
-		// Implementazione specifica di come questo Coupon si applica alla Membership
+		//non implementato
+		// TODO
 	}
 
 	public Date getExpiringDate() {

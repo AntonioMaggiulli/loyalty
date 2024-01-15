@@ -3,31 +3,20 @@ package it.unicam.cs.ids.loyalty.view;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import ch.qos.logback.core.joran.conditional.IfAction;
-import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.model.Employee;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
-import it.unicam.cs.ids.loyalty.model.MemberCard;
 import it.unicam.cs.ids.loyalty.model.Membership;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Transaction;
-import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
-import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
-import it.unicam.cs.ids.loyalty.service.DefaultCustomerService;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
-import it.unicam.cs.ids.loyalty.service.DefaultMembershipService;
-import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
-import jakarta.transaction.Transactional;
-import jakarta.websocket.ClientEndpoint;
 
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Scanner;
 
 @Component
@@ -35,26 +24,17 @@ public class EmployeeDashboard {
 
 	private final EmployeeRepository employeeRepository;
 	private final MerchantRepository merchantRepository;
-	private final BenefitRepository benefitRepository;
-	private final MemberCardRepository memberCardRepository;
-	@Autowired
-	private DefaultMerchantService merchantService;
-	private DefaultCustomerService customerService;
+
 	@Autowired
 	private DefaultLoyaltyProgramService loyaltyProgramService;
-	@Autowired
-	private DefaultMembershipService membershipService;
 
 	private Scanner scanner = new Scanner(System.in);
 	private int merchantId;
 
 	@Autowired
-	public EmployeeDashboard(EmployeeRepository employeeRepository, MerchantRepository merchantRepository,
-			BenefitRepository benefitRepository, MemberCardRepository memberCardRepository) {
+	public EmployeeDashboard(EmployeeRepository employeeRepository, MerchantRepository merchantRepository) {
 		this.employeeRepository = employeeRepository;
 		this.merchantRepository = merchantRepository;
-		this.benefitRepository = benefitRepository;
-		this.memberCardRepository = memberCardRepository;
 	}
 
 	public void login() {
@@ -97,7 +77,6 @@ public class EmployeeDashboard {
 				System.out.println("Errore: per favore inserisci un numero intero.");
 				scanner.next();
 			}
-			// scanner.nextLine();
 
 			switch (option) {
 			case 1:

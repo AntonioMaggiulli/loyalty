@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import it.unicam.cs.ids.loyalty.model.Employee;
-import it.unicam.cs.ids.loyalty.model.Merchant;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {

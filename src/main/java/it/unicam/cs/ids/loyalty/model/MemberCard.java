@@ -1,7 +1,6 @@
 package it.unicam.cs.ids.loyalty.model;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 
 /**
@@ -28,11 +26,9 @@ public class MemberCard {
 	@JoinColumn(name = "membership_id", nullable = false)
 	private Membership membership;
 
-	// Default constructor required by JPA
 	public MemberCard() {
 	}
 
-	// Constructor with parameters
 	public MemberCard(Membership membership) {
 		this.membership = membership;
 	}
@@ -55,7 +51,6 @@ public class MemberCard {
 		return cardNumber;
 	}
 
-	// Private method to generate the card number
 	public void SetCardNumber() {
 		if (this.id != 0) {
 			this.cardNumber = String.format("%08d", this.id);
@@ -95,5 +90,4 @@ public class MemberCard {
 
 		return !LocalDate.now().isAfter(expirationDate);
 	}
-
 }

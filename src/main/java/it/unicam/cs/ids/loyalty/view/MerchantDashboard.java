@@ -6,11 +6,13 @@ import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.context.request.AbstractRequestAttributes;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
+import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.model.Employee;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Partnership;
+import it.unicam.cs.ids.loyalty.model.Transaction;
 import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
@@ -99,6 +101,8 @@ public class MerchantDashboard {
 			System.out.println("5. Aggiungi un Benefit al programma Fedeltà");
 			System.out.println("6. Visualizza Benefit di un programma Fedeltà");
 			System.out.println("7. Crea utenza per dipendente");
+			System.out.println("8. Monitoraggio delle Transazioni dei clienti");
+			
 			System.out.println("0. Esci");
 
 			int option;
@@ -132,6 +136,9 @@ public class MerchantDashboard {
 			case 7:
 				createEmployee(merchantId);
 				break;
+			case 8:
+			    monitorTransaction(merchantId);
+			    break;
 			case 0:
 				System.out.println("Arrivederci!");
 				return;
@@ -141,6 +148,38 @@ public class MerchantDashboard {
 			}
 		}
 	}
+
+	private void monitorTransaction(int merchantId) {
+		viewMerchantLoyaltyProgram(merchantId);
+		int programId = getProgramIdInput();
+
+		LoyaltyProgram program = getLoyaltyProgram(programId);
+		if (program == null) {
+			return;
+		}
+		Map<String, List<Transaction>> transactionsByBenefitType = loyaltyProgramService.getTransactionsByBenefitType(program);
+
+	    for (Map.Entry<String, List<Transaction>> entry : transactionsByBenefitType.entrySet()) {
+	        String benefitType = entry.getKey();
+	        List<Transaction> transactions = entry.getValue();
+
+	        System.out.println("Benefit Type: " + benefitType);
+	        for (Transaction transaction : transactions) {
+	            Customer customer=transaction.getMembershipAccount().getMembership().getCustomer();
+	            int pointsChange = transaction.getPointsEarned() - transaction.getPointsSpent();
+				String sign = pointsChange >= 0 ? "+ " : "- ";
+				System.out.println("Cliente: "+ customer.getCognome()+
+						" "+customer.getNome()+
+				" ID Transazione: " + transaction.getId() + ", Data: "
+						+ transaction.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+						+ ", Descrizione(Benefit): " + transaction.getLoyaltyBenefit().getName() + ", Punti: " + sign
+						+ Math.abs(pointsChange));
+			};
+	            System.out.println(); 
+	        }
+	    }
+        
+    
 
 	private void manageLevels(int merchantId) {
 		viewMerchantLoyaltyProgram(merchantId);
@@ -627,7 +666,7 @@ public class MerchantDashboard {
 		}
 	}
 
-	public void createEmployee(int merchantId) {
+	private void createEmployee(int merchantId) {
 		boolean usernameChosen = false;
 		String password = null;
 		Merchant merchant = merchantRepository.findById(merchantId)

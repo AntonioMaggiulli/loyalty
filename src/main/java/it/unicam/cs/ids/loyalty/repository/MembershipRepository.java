@@ -1,6 +1,5 @@
 package it.unicam.cs.ids.loyalty.repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,7 +10,6 @@ import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.MemberCard;
 import it.unicam.cs.ids.loyalty.model.Membership;
-import it.unicam.cs.ids.loyalty.model.Merchant;
 
 /**
  * Repository interface for managing Membership entities.

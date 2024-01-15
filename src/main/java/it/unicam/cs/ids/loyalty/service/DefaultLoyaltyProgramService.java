@@ -18,7 +18,6 @@ import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
 import it.unicam.cs.ids.loyalty.repository.MembershipAccountRepository;
 import it.unicam.cs.ids.loyalty.repository.MembershipRepository;
-import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
 import it.unicam.cs.ids.loyalty.repository.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -109,26 +108,18 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	}
 
 	public List<LoyaltyProgram> getByMerchant(int idMerchant) {
-		// Recupera le partnership associate all'azienda specificata
+
 		List<Partnership> partnerships = partnershipRepository.findByMerchantId(idMerchant);
-
-		// Crea una lista per i programmi fedeltà associati
 		List<LoyaltyProgram> associatedPrograms = partnerships.stream().map(Partnership::getLoyaltyProgram).toList();
-
 		return associatedPrograms;
 	}
 
 	public List<LoyaltyProgram> getAvailableCustomerProgram(int idCustomer) {
 
-		// Recupera tutti i programmi fedeltà disponibili
 		List<LoyaltyProgram> allPrograms = loyaltyProgramRepository.findAll();
-
-		// Recupera le membership del cliente per ottenere i programmi a cui è già
-		// iscritto
 		List<LoyaltyProgram> subscribedPrograms = membershipRepository.findByCustomerId(idCustomer).stream()
 				.map(Membership::getLoyaltyProgram).collect(Collectors.toList());
 
-		// Filtra i programmi fedeltà, escludendo quelli a cui il cliente è già iscritto
 		return allPrograms.stream().filter(program -> !subscribedPrograms.contains(program))
 				.collect(Collectors.toList());
 	}
@@ -136,15 +127,11 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	public void joinLoyaltyProgram(int customerId, int loyaltyProgramId) {
 
 		Customer customer = customerRepository.findById(customerId).get();
-
 		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId).get();
-
 		List<Level> sortedLevels = loyaltyProgram.getLevels().stream()
 				.sorted(Comparator.comparingInt(Level::getPointsThreshold)).collect(Collectors.toList());
 		Level initialLevel = sortedLevels.get(0);
-
 		Membership membership = loyaltyProgram.enrollCustomer(customer, initialLevel);
-
 		MembershipAccount newMembershipAccount = new MembershipAccount(membership);
 		membership.setMembershipAccount(newMembershipAccount);
 
@@ -246,6 +233,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 		return programCustomerMap;
 	}
+
 	public Transaction createTransaction(String type, int merchantId, double amount, String cardString) {
 		MemberCard card = memberCardRepository.findByCardNumber(cardString)
 				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata."));
@@ -269,14 +257,14 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		account.checkUpgradeForLevel(benefit.getLoyaltyProgram());
 		membershipAccountRepository.save(account);
 		return transaction;
-		}
-	
+	}
+
 	public void createTransaction(String type, Benefit benefit, double amount, String cardString) {
 		MemberCard card = memberCardRepository.findByCardNumber(cardString)
 				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata."));
 		Membership membership = membershipRepository.findByMemberCard(card)
 				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
-		
+
 		MembershipAccount account = membership.getAccount();
 
 		Transaction transaction = new Transaction(benefit, amount, account);
@@ -335,7 +323,6 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		if (newThreshold != null) {
 			existingLevel.setPointsThreshold(newThreshold);
 		}
-
 		return levelRepository.save(existingLevel);
 	}
 
@@ -368,4 +355,21 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		return true;
 	}
 
+	public List<Transaction> getTransactions(int customerId, int programId) {
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new IllegalArgumentException("Customer non trovato."));
+		LoyaltyProgram lProgram = loyaltyProgramRepository.findById(programId)
+				.orElseThrow(() -> new IllegalArgumentException("Programma non trovato."));
+		Membership membership = membershipRepository.findByCustomerAndLoyaltyProgram(customer, lProgram)
+				.orElseThrow(() -> new IllegalArgumentException("Adesione non trovata."));
+
+		List<Transaction> transactions = membership.getAccount().getTransactions();
+		return transactions;
+	}
+
+	public Map<String, List<Transaction>> getTransactionsByBenefitType(LoyaltyProgram lProgram) {
+	    return lProgram.getMemberships().stream()
+	            .flatMap(membership -> membership.getAccount().getTransactions().stream())
+	            .collect(Collectors.groupingBy(transaction -> transaction.getLoyaltyBenefit().getType()));
+	}
 }

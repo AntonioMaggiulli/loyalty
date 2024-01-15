@@ -13,7 +13,7 @@ public class MembershipAccount {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private int id;
 	@OneToOne
 	@JoinColumn(name = "membership_id", nullable = false)
 	private Membership membership;
@@ -26,7 +26,7 @@ public class MembershipAccount {
 	// servirà per determinare il
 	// livello di fedeltà
 	private int totalPointsEarned = 0;
-	@OneToMany(mappedBy = "membershipAccount", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "membershipAccount", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<Transaction> transactions;
 
 	public MembershipAccount() {
@@ -48,7 +48,7 @@ public class MembershipAccount {
 	 *
 	 * @return The ID of the membership account.
 	 */
-	public Long getId() {
+	public int getId() {
 		return id;
 	}
 
@@ -96,7 +96,7 @@ public class MembershipAccount {
 		totalPointsEarned += pointsEarned;
 	}
 
-	public void setId(Long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -120,7 +120,6 @@ public class MembershipAccount {
 
 		if (!nextLevel.equals(getMembership().getCurrentLevel())) {
 			getMembership().setCurrentLevel(nextLevel);
-
 		}
 	}
 
@@ -139,5 +138,4 @@ public class MembershipAccount {
 	public void setTotalPointsEarned(int totalPointsEarned) {
 		this.totalPointsEarned = totalPointsEarned;
 	}
-
 }

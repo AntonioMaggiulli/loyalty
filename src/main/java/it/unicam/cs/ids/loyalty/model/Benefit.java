@@ -8,26 +8,6 @@ import jakarta.persistence.*;
 @Entity
 public abstract class Benefit {
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public void setPointsRequired(int pointsRequired) {
-		this.pointsRequired = pointsRequired;
-	}
-
-	public void setOfferingMerchant(Merchant offeringMerchant) {
-		this.offeringMerchant = offeringMerchant;
-	}
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -148,8 +128,8 @@ public abstract class Benefit {
 	 * @param membership The membership to apply the benefit to.
 	 */
 	public abstract void applyBenefit(Transaction transaction);
-	
-	public abstract boolean isEligibleForRedemption(MembershipAccount account); 
+
+	public abstract boolean isEligibleForRedemption(MembershipAccount account);
 
 	public Level getAssociatedLevel() {
 		return associatedLevel;
@@ -167,4 +147,23 @@ public abstract class Benefit {
 		this.type = type;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setPointsRequired(int pointsRequired) {
+		this.pointsRequired = pointsRequired;
+	}
+
+	public void setOfferingMerchant(Merchant offeringMerchant) {
+		this.offeringMerchant = offeringMerchant;
+	}
 }

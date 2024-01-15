@@ -1,7 +1,6 @@
 package it.unicam.cs.ids.loyalty.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -9,8 +8,6 @@ import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
-
-import java.util.List;
 
 /**
  * Repository interface for managing Benefit entities.
@@ -38,6 +35,5 @@ public interface BenefitRepository extends JpaRepository<Benefit, Integer> {
 
 	List<Benefit> findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(String type,
 			int loyaltyProgramId, int offeringMerchantId, int associatedLevelId);
-
 
 }

@@ -14,7 +14,8 @@ public class Cashback extends Benefit {
 
 	@Override
 	public void applyBenefit(Transaction transaction) {
-		// implementazione specifica del cashback
+		//non implementato 
+		//TODO
 	}
 
 	public double getCashBackRate() {
