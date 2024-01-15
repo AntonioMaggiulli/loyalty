@@ -372,4 +372,6 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	            .flatMap(membership -> membership.getAccount().getTransactions().stream())
 	            .collect(Collectors.groupingBy(transaction -> transaction.getLoyaltyBenefit().getType()));
 	}
+
 }
+

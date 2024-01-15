@@ -14,6 +14,7 @@ public class MembershipAccount {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	
 	@OneToOne
 	@JoinColumn(name = "membership_id", nullable = false)
 	private Membership membership;

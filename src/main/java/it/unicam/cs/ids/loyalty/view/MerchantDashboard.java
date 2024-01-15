@@ -150,6 +150,7 @@ public class MerchantDashboard {
 	}
 
 	private void monitorTransaction(int merchantId) {
+		
 		viewMerchantLoyaltyProgram(merchantId);
 		int programId = getProgramIdInput();
 
