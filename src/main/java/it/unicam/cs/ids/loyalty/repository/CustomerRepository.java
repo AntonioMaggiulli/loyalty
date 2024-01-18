@@ -1,7 +1,6 @@
 package it.unicam.cs.ids.loyalty.repository;
 
 import it.unicam.cs.ids.loyalty.model.Customer;
-import it.unicam.cs.ids.loyalty.model.Membership;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

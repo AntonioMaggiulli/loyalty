@@ -2,8 +2,6 @@ package it.unicam.cs.ids.loyalty.view;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.support.WebExchangeBindException;
-import org.springframework.web.context.request.AbstractRequestAttributes;
 
 import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Customer;

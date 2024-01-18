@@ -123,32 +123,33 @@ public class CustomerDashboard {
 
 	private void viewTransactions(int customerId) {
 		System.out.println("\nVisualizzazione delle transazioni:");
-		viewCustomerLoyaltyPrograms(customerId);
+		List<Membership> memberships = viewCustomerLoyaltyPrograms(customerId);
+		if (!memberships.isEmpty()) {
+			System.out.print("Inserisci il codice del programma di fedeltà: ");
+			int programId = scanner.nextInt();
+			scanner.nextLine();
 
-		System.out.print("Inserisci il codice del programma di fedeltà: ");
-		int programId = scanner.nextInt();
-		scanner.nextLine();
-
-		List<Transaction> transactions = loyaltyProgramService.getTransactions(customerId, programId);
-		if (transactions.isEmpty()) {
-			System.out.println("Nessuna transazione disponibile per questo programma di fedeltà.");
-		} else {
-			System.out.println("\n===================================================================\n");
-			transactions.forEach(transaction -> {
-				int pointsChange = transaction.getPointsEarned() - transaction.getPointsSpent();
-				String sign = pointsChange >= 0 ? "+ " : "- ";
-				System.out.println("ID Transazione: " + transaction.getId() + ", Data: "
-						+ transaction.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-						+ ", Descrizione(Benefit): " + transaction.getLoyaltyBenefit().getName() + ", Punti: " + sign
-						+ Math.abs(pointsChange));
-			});
+			List<Transaction> transactions = loyaltyProgramService.getTransactions(customerId, programId);
+			if (transactions.isEmpty()) {
+				System.out.println("Nessuna transazione disponibile per questo programma di fedeltà.");
+			} else {
+				System.out.println("\n===================================================================\n");
+				transactions.forEach(transaction -> {
+					int pointsChange = transaction.getPointsEarned() - transaction.getPointsSpent();
+					String sign = pointsChange >= 0 ? "+ " : "- ";
+					System.out.println("ID Transazione: " + transaction.getId() + ", Data: "
+							+ transaction.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+							+ ", Descrizione(Benefit): " + transaction.getLoyaltyBenefit().getName() + ", Punti: "
+							+ sign + Math.abs(pointsChange));
+				});
+			}
+			System.out.println("===================================================================\n");
 		}
-		System.out.println("===================================================================\n");
 		displayOptions(customerId);
 	}
 
 	@Transactional
-	void viewCustomerLoyaltyPrograms(int customerId) {
+	List<Membership> viewCustomerLoyaltyPrograms(int customerId) {
 		Customer customer = customerRepository.findById(customerId).orElse(null);
 		System.out.println("\n=========================================================\n"
 				+ "Lista dei programmi fedeltà di " + customer.getNome() + " " + customer.getCognome() + ":\n");
@@ -163,6 +164,7 @@ public class CustomerDashboard {
 			});
 		}
 		System.out.println("=========================================================\n");
+		return memberships;
 	}
 
 	private void viewCustomerPoints(int customerId) {
