@@ -4,7 +4,6 @@ import it.unicam.cs.ids.loyalty.model.Customer;
 import it.unicam.cs.ids.loyalty.repository.CustomerRepository;
 
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
-import it.unicam.cs.ids.loyalty.repository.MembershipRepository;
 import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +21,6 @@ public class DefaultCustomerService implements CrudService<Customer> {
 	private final CustomerRepository customerRepository;
 
 	@Autowired
-	private final MembershipRepository membershipRepository;
-
-	@Autowired
 	final LoyaltyProgramRepository loyaltyProgramRepository;
 
 	@Autowired
@@ -32,11 +28,9 @@ public class DefaultCustomerService implements CrudService<Customer> {
 
 	@Autowired
 	public DefaultCustomerService(CustomerRepository customerRepository,
-			LoyaltyProgramRepository loyaltyProgramRepository, MembershipRepository membershipRepository,
-			MemberCardRepository memberCardRepository) {
+			LoyaltyProgramRepository loyaltyProgramRepository, MemberCardRepository memberCardRepository) {
 		this.customerRepository = customerRepository;
 		this.loyaltyProgramRepository = loyaltyProgramRepository;
-		this.membershipRepository = membershipRepository;
 		this.memberCardRepository = memberCardRepository;
 	}
 
