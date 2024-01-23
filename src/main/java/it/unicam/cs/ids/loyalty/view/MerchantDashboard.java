@@ -11,10 +11,12 @@ import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.Merchant;
 import it.unicam.cs.ids.loyalty.model.Partnership;
 import it.unicam.cs.ids.loyalty.model.Transaction;
+import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
 import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
+import it.unicam.cs.ids.loyalty.util.HandleStatistics;
 import it.unicam.cs.ids.loyalty.util.PasswordGenerator;
 import jakarta.transaction.Transactional;
 
@@ -37,17 +39,20 @@ public class MerchantDashboard {
 
 	private final MerchantRepository merchantRepository;
 	private final EmployeeRepository employeeRepository;
+	private final BenefitRepository benefitRepository;
 	private DefaultMerchantService merchantService;
 	private DefaultLoyaltyProgramService loyaltyProgramService;
 	private Scanner scanner = new Scanner(System.in);
 
 	@Autowired
 	public MerchantDashboard(MerchantRepository merchantRepository, EmployeeRepository employeeRepository,
-			DefaultMerchantService merchantService, DefaultLoyaltyProgramService loyaltyProgramService) {
+			BenefitRepository benefitRepository, DefaultMerchantService merchantService,
+			DefaultLoyaltyProgramService loyaltyProgramService) {
 		this.merchantRepository = merchantRepository;
 		this.merchantService = merchantService;
 		this.employeeRepository = employeeRepository;
 		this.loyaltyProgramService = loyaltyProgramService;
+		this.benefitRepository = benefitRepository;
 	}
 
 	public void login() {
@@ -100,6 +105,7 @@ public class MerchantDashboard {
 			System.out.println("6. Visualizza Benefit di un programma Fedeltà");
 			System.out.println("7. Crea utenza per dipendente");
 			System.out.println("8. Monitoraggio delle Transazioni dei clienti");
+			System.out.println("9. Statistiche");
 			
 			System.out.println("0. Esci");
 
@@ -135,8 +141,11 @@ public class MerchantDashboard {
 				createEmployee(merchantId);
 				break;
 			case 8:
-			    monitorTransaction(merchantId);
-			    break;
+				monitorTransaction(merchantId);
+				break;
+			case 9:
+				getStatisticsofLoyaltyProgram(merchantId);
+				break;
 			case 0:
 				System.out.println("Arrivederci!");
 				return;
@@ -148,7 +157,7 @@ public class MerchantDashboard {
 	}
 
 	private void monitorTransaction(int merchantId) {
-		
+
 		viewMerchantLoyaltyProgram(merchantId);
 		int programId = getProgramIdInput();
 
@@ -156,29 +165,28 @@ public class MerchantDashboard {
 		if (program == null) {
 			return;
 		}
-		Map<String, List<Transaction>> transactionsByBenefitType = loyaltyProgramService.getTransactionsByBenefitType(program);
+		Map<String, List<Transaction>> transactionsByBenefitType = loyaltyProgramService
+				.getTransactionsByBenefitType(program);
 
-	    for (Map.Entry<String, List<Transaction>> entry : transactionsByBenefitType.entrySet()) {
-	        String benefitType = entry.getKey();
-	        List<Transaction> transactions = entry.getValue();
+		for (Map.Entry<String, List<Transaction>> entry : transactionsByBenefitType.entrySet()) {
+			String benefitType = entry.getKey();
+			List<Transaction> transactions = entry.getValue();
 
-	        System.out.println("Benefit Type: " + benefitType);
-	        for (Transaction transaction : transactions) {
-	            Customer customer=transaction.getMembershipAccount().getMembership().getCustomer();
-	            int pointsChange = transaction.getPointsEarned() - transaction.getPointsSpent();
+			System.out.println("Benefit Type: " + benefitType);
+			for (Transaction transaction : transactions) {
+				Customer customer = transaction.getMembershipAccount().getMembership().getCustomer();
+				int pointsChange = transaction.getPointsEarned() - transaction.getPointsSpent();
 				String sign = pointsChange >= 0 ? "+ " : "- ";
-				System.out.println("Cliente: "+ customer.getCognome()+
-						" "+customer.getNome()+
-				" ID Transazione: " + transaction.getId() + ", Data: "
+				System.out.println("Cliente: " + customer.getCognome() + " " + customer.getNome() + " ID Transazione: "
+						+ transaction.getId() + ", Data: "
 						+ transaction.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 						+ ", Descrizione(Benefit): " + transaction.getLoyaltyBenefit().getName() + ", Punti: " + sign
 						+ Math.abs(pointsChange));
-			};
-	            System.out.println(); 
-	        }
-	    }
-        
-    
+			}
+			;
+			System.out.println();
+		}
+	}
 
 	private void manageLevels(int merchantId) {
 		viewMerchantLoyaltyProgram(merchantId);
@@ -501,8 +509,8 @@ public class MerchantDashboard {
 			try {
 				addNewLevel(program);
 			} catch (IllegalArgumentException e) {
-		            System.out.println("Errore: " + e.getMessage());
-		            System.out.println("Inserisci una soglia diversa per il livello.");
+				System.out.println("Errore: " + e.getMessage());
+				System.out.println("Inserisci una soglia diversa per il livello.");
 			}
 
 			try {
@@ -705,13 +713,74 @@ public class MerchantDashboard {
 				}
 			} else {
 
-
 				merchantService.createNewEmployee(merchantId, name, matricola, username, password);
 				System.out.println("Dipendente creato con successo: " + name + " con username: " + username
 						+ " e password: " + password);
 				usernameChosen = true;
 			}
 		}
+	}
+
+	private void getStatisticsofLoyaltyProgram(int merchantId) {
+		System.out.println("QUESTI SONO I PROGRAMMI FEDELTA' IN CUI PARTECIPI");
+		viewMerchantLoyaltyProgram(merchantId);
+
+		int programId;
+		try {
+			System.out.print("Inserisci il codice del programma di fedeltà: ");
+			programId = scanner.nextInt();
+			scanner.nextLine();
+		} catch (InputMismatchException e) {
+			System.out.println("Input non valido. Inserisci un numero intero.");
+			return;
+		}
+
+		LoyaltyProgram program;
+		try {
+			program = loyaltyProgramService.getById(programId)
+					.orElseThrow(() -> new RuntimeException("Programma fedeltà non trovato."));
+		} catch (RuntimeException e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+
+		HandleStatistics loyaltyProgramStatistics = new HandleStatistics(benefitRepository, program);
+		printStatistics(loyaltyProgramStatistics, program);
+
+	}
+
+	private void printStatistics(HandleStatistics loyaltyProgramStatistics, LoyaltyProgram program) {
+System.out.println("****************************************************\n");
+		int numberOfCustomers = loyaltyProgramStatistics.getNumberOfCustomers();
+		System.out.println("Numero di Clienti: " + numberOfCustomers);
+
+		int numberOfTransactions = loyaltyProgramStatistics.getNumberOfTransactions();
+		System.out.println("Numero di Transazioni: " + numberOfTransactions);
+
+		int totalBenefits = loyaltyProgramStatistics.getTotalBenefits();
+		System.out.println("Totale Benefici: " + totalBenefits);
+
+		Map<Level, Integer> benefitsCountByLevel = loyaltyProgramStatistics.getBenefitsCountByLevel();
+		System.out.println("Conteggio Benefici per Livello:");
+		for (Map.Entry<Level, Integer> entry : benefitsCountByLevel.entrySet()) {
+			System.out.println(entry.getKey().getName() + ": " + entry.getValue());
+		}
+
+		int totalPointsEarned = loyaltyProgramStatistics.getTotalPointsEarned();
+		System.out.println("Totale Punti Accumulati dai clienti: " + totalPointsEarned);
+
+		double averageMoneySpentForPointsReward = loyaltyProgramStatistics.getAverageMoneySpentForPointsReward();
+		System.out.println("Spesa media per ottenere punti: " + averageMoneySpentForPointsReward);
+
+		double totalMoneySpent = loyaltyProgramStatistics.getTotalMoneySpent();
+		System.out.println("Totale Spesa dei clienti: " + totalMoneySpent);
+
+		Map<String, Integer> redeemedBenefitsByType = loyaltyProgramStatistics.getRedeemedBenefitsByType();
+		System.out.println("Benefici Riscattati per Tipologia:");
+		for (Map.Entry<String, Integer> entry : redeemedBenefitsByType.entrySet()) {
+			System.out.println(entry.getKey() + ": " + entry.getValue());
+		}
+		System.out.println("\n**************************************************\n");
 	}
 
 	public Merchant insertMerchant() {
@@ -723,4 +792,5 @@ public class MerchantDashboard {
 		System.out.println("Mechant creato con successo");
 		return merchantRepository.save(newMerchant);
 	}
+
 }

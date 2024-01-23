@@ -34,7 +34,7 @@ public class PointsReward extends Benefit {
 	public void applyBenefit(Transaction transaction) {
 		if (transaction.getLoyaltyBenefit() instanceof PointsReward) {
 			PointsReward pointsReward = (PointsReward) transaction.getLoyaltyBenefit();
-			double eurosSpent = transaction.getEurosSpent();
+			double eurosSpent = transaction.getMoneySpent();
 
 			int pointsEarned = (int) (eurosSpent / pointsReward.getMoneySpent() * pointsReward.getEarnsPoints());
 

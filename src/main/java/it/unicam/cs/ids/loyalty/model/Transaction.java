@@ -88,7 +88,7 @@ public class Transaction {
 	 *
 	 * @return The euros spent in the transaction.
 	 */
-	public double getEurosSpent() {
+	public double getMoneySpent() {
 		return moneySpent;
 	}
 
