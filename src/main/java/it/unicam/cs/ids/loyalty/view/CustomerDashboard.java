@@ -79,11 +79,13 @@ public class CustomerDashboard {
 		int option;
 		do {
 			System.out.println("Seleziona un'opzione:");
-			System.out.println("1. Visualizza i tuoi programmi fedeltà");
+			System.out.println("1. Visualizza il tuo profilo");
 			System.out.println("2. Visualizza un catalogo Premi");
 			System.out.println("3. Aderisci a un programma fedeltà");
 			System.out.println("4. Riscatta un Benefit");
 			System.out.println("5. Visualizza Transazioni");
+			System.out.println("6. Invita un amico");
+
 			System.out.println("0. Esci");
 
 			try {
@@ -92,7 +94,7 @@ public class CustomerDashboard {
 
 				switch (option) {
 				case 1:
-					viewCustomerLoyaltyPrograms(customerId);
+					viewCustomerProfile(customerId);
 					break;
 				case 2:
 					viewBenefit(customerId);
@@ -106,6 +108,10 @@ public class CustomerDashboard {
 				case 5:
 					viewTransactions(customerId);
 					break;
+				case 6:
+					inviteFriend(customerId);
+					break;
+
 				case 0:
 					System.out.println("Arrivederci!");
 					return;
@@ -119,6 +125,79 @@ public class CustomerDashboard {
 				option = -1;
 			}
 		} while (option < 0 || option > 5);
+	}
+
+	/*
+	 * private void inviteFriendOption(int customerId) {
+	 * 
+	 * System.out.println("\nInvita un amico");
+	 * 
+	 * System.out.print("Inserisci l'email dell'amico: "); String friendContact =
+	 * scanner.nextLine(); try { loyaltyProgramService.inviteFriend(customerId,
+	 * friendContact); System.out.println("Invito inviato con successo all'amico!");
+	 * } catch (Exception e) {
+	 * System.out.println("Errore durante l'invio dell'invito: " + e.getMessage());
+	 * }
+	 * 
+	 * 
+	 * }
+	 */
+	private void inviteFriend(int customerId) {
+		String messageString = null;
+		viewCustomerLoyaltyPrograms(customerId);
+
+		System.out.print("Seleziona un programma fedeltà per l'invito: ");
+		int loyaltyProgramId = scanner.nextInt();
+		scanner.nextLine();
+
+		System.out.print("Inserisci l'email della persona che vuoi invitare: ");
+		String friendContact = scanner.nextLine();
+
+		try {
+			messageString = loyaltyProgramService.inviteFriend(customerId, loyaltyProgramId, friendContact);
+		} catch (EntityNotFoundException e) {
+			System.err.println("Errore durante l'invito: " + e.getMessage());
+		}
+
+		if (messageString != null)
+			System.out.println("Invito creato con il seguente testo: " + messageString);
+	}
+
+	private void viewCustomerProfile(int customerId) {
+
+		Customer customer = customerRepository.findById(customerId).orElse(null);
+
+		if (customer != null) {
+			// Visualizza i dati personali del cliente
+			System.out.println(
+					"\n--------------------------------------\nDATI PERSONALI\n--------------------------------------");
+			System.out.println("Nome: " + customer.getNome());
+			System.out.println("Cognome: " + customer.getCognome());
+			System.out.println("Codice Fiscale: " + customer.getCodiceFiscale());
+			System.out.println("Data di Nascita: " + customer.getDateOfBirth());
+
+			// Visualizza il codice amico
+			System.out.println("\nCodice Amico: " + customer.getReferralCodeString());
+
+			// Visualizza la lista dei programmi fedeltà con i punti
+			System.out.println(
+					"\n--------------------------------------\nPROGRAMMI FEDELTA'\n--------------------------------------\n\n");
+			List<Membership> memberships = customer.getMemberships();
+			if (memberships.isEmpty()) {
+				System.out.println("Non sei iscritto a nessun programma fedeltà.");
+			} else {
+				memberships.forEach(membership -> {
+					LoyaltyProgram loyaltyProgram = membership.getLoyaltyProgram();
+					System.out.println("Programma: " + loyaltyProgram.getProgramName());
+					System.out.println("Punti: " + membership.getMembershipAccount().getLoyaltyPoints());
+					System.out.println("Tessera: " + membership.getMemberCard().getCardNumber());
+					System.out.println("--------------------------------------");
+				});
+			}
+		} else {
+			System.out.println("Cliente non trovato.");
+		}
+		displayOptions(customerId);
 	}
 
 	private void viewTransactions(int customerId) {
@@ -200,12 +279,23 @@ public class CustomerDashboard {
 			}
 
 			LoyaltyProgram selectedProgram = availablePrograms.get(choice - 1);
-			loyaltyProgramService.joinLoyaltyProgram(customerId, selectedProgram.getId());
-			System.out.println("Ti sei iscritto con successo al programma: " + selectedProgram.getProgramName());
+			System.out.print("Inserisci il codice amico del presentante (se disponibile): ");
+			String referralCode = scanner.nextLine();
+			try {
+				Membership membership = loyaltyProgramService.joinLoyaltyProgram(customerId, selectedProgram.getId(),
+						referralCode);
+				if (membership != null)
+					System.out
+							.println("Ti sei iscritto con successo al programma: " + selectedProgram.getProgramName());
+			} catch (Exception e) {
+				System.err.println("Errore nell'adesione: " + e.getMessage());
+			}
+
 		} catch (InputMismatchException e) {
 			System.out.println("Errore: input non valido. Inserisci un numero.");
 			scanner.nextLine();
 		}
+		displayOptions(customerId);
 	}
 
 	public Customer insertCustomer() {
@@ -218,10 +308,11 @@ public class CustomerDashboard {
 		System.out.print("Inserisci il codice fiscale del cliente: ");
 		String codiceFiscale = scanner.nextLine().toUpperCase();
 
+		System.out.print("Inserisci l'email del cliente: ");
+		String email = scanner.nextLine();
+
 		System.out.println("altri campi non utili per la demo vengono omessi e sono stati commentati nel codice");
 		/*
-		 * System.out.print("Inserisci l'email del cliente: "); String email =
-		 * scanner.nextLine();
 		 * 
 		 * System.out.print("Inserisci il telefono del cliente: "); String telefono =
 		 * scanner.nextLine();
@@ -243,6 +334,7 @@ public class CustomerDashboard {
 		newCustomer.setCognome(cognome);
 		newCustomer.setNome(nome);
 		newCustomer.setCodiceFiscale(codiceFiscale);
+		newCustomer.setEmail(email);
 		/*
 		 * newCustomer.setEmail(email); newCustomer.setTelefono(telefono);
 		 * newCustomer.setIndirizzo(indirizzo);
@@ -250,6 +342,8 @@ public class CustomerDashboard {
 		newCustomer.setDateOfBirth(dateOfBirth);
 		newCustomer.setReferralCodeString(codiceAmico);
 		System.out.println("il tuo codice per la campagna \"presenta un Amico\" è " + codiceAmico);
+
+		System.out.println("Cliente Registrato, effettua il login");
 		return customerRepository.save(newCustomer);
 	}
 

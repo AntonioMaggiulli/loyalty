@@ -29,6 +29,11 @@ public class Membership {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "level_id", nullable = false)
 	private Level currentLevel;
+	
+	@OneToOne
+	private Invitation receivedInvitation;
+;
+
 
 	/**
 	 * Creates a new membership.
@@ -122,5 +127,13 @@ public class Membership {
 
 	public void setCurrentLevel(Level currentLevel) {
 		this.currentLevel = currentLevel;
+	}
+
+	public Invitation getReceivedInvitation() {
+		return receivedInvitation;
+	}
+
+	public void setReceivedInvitation(Invitation receivedInvitation) {
+		this.receivedInvitation = receivedInvitation;
 	}
 }

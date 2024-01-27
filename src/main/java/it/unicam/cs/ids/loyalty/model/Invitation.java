@@ -13,13 +13,12 @@ public class Invitation {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sender_id")
 	private Customer sender;
-
+	
 	private String friendEmail;
 	private Date invitationDate;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "membership_id")
-	private Membership membership;
+	@Column(columnDefinition = "TEXT")
+	private String text;
 
 	private String telephoneNumber;
 
@@ -27,12 +26,13 @@ public class Invitation {
 		// Costruttore vuoto per JPA
 	}
 
-	public Invitation(Customer sender, String friendEmail, Date invitationDate, Membership membership) {
-		this.sender = sender;
-		this.friendEmail = friendEmail;
-		this.invitationDate = invitationDate;
-		this.membership = membership;
-	}
+	public Invitation(Customer sender, String friendContact, Membership membership, Date invitationDate, String text) {
+        this.sender = sender;
+        this.friendEmail = friendContact;
+        //this.membership = membership;
+        this.invitationDate = invitationDate;
+        this.text = text;
+    }
 
 	// Getters and Setters
 	public Customer getSender() {
@@ -57,14 +57,6 @@ public class Invitation {
 
 	public void setInvitationDate(Date invitationDate) {
 		this.invitationDate = invitationDate;
-	}
-
-	public Membership getMembership() {
-		return membership;
-	}
-
-	public void setMembership(Membership membership) {
-		this.membership = membership;
 	}
 
 	public int getId() {

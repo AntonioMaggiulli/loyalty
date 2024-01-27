@@ -3,6 +3,7 @@ package it.unicam.cs.ids.loyalty.service;
 import it.unicam.cs.ids.loyalty.factories.BenefitFactory;
 import it.unicam.cs.ids.loyalty.model.Benefit;
 import it.unicam.cs.ids.loyalty.model.Customer;
+import it.unicam.cs.ids.loyalty.model.Invitation;
 import it.unicam.cs.ids.loyalty.model.Level;
 import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.MemberCard;
@@ -13,6 +14,7 @@ import it.unicam.cs.ids.loyalty.model.Partnership;
 import it.unicam.cs.ids.loyalty.model.Transaction;
 import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import it.unicam.cs.ids.loyalty.repository.CustomerRepository;
+import it.unicam.cs.ids.loyalty.repository.InvitationRepository;
 import it.unicam.cs.ids.loyalty.repository.LevelRepository;
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
 import it.unicam.cs.ids.loyalty.repository.MemberCardRepository;
@@ -27,9 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import ch.qos.logback.core.filter.Filter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +55,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	private final LevelRepository levelRepository;
 	private final BenefitRepository benefitRepository;
 	private final MemberCardRepository memberCardRepository;
+	private final InvitationRepository invitationRepository;
 	@Autowired
 	private TransactionRepository transactionRepository;
 	@Autowired
@@ -60,7 +66,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 			CustomerRepository customerRepository, PartnershipRepository partnershipRepository,
 			LevelRepository levelRepository, BenefitRepository benefitRepository,
 			MembershipRepository membershipRepository, MemberCardRepository memberCardRepository,
-			DefaultMerchantService merchantService) {
+			DefaultMerchantService merchantService, InvitationRepository invitationRepository) {
 		this.merchantService = merchantService;
 		this.loyaltyProgramRepository = loyaltyProgramRepository;
 		this.customerRepository = customerRepository;
@@ -69,6 +75,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		this.benefitRepository = benefitRepository;
 		this.membershipRepository = membershipRepository;
 		this.memberCardRepository = memberCardRepository;
+		this.invitationRepository = invitationRepository;
 	}
 
 	@Override
@@ -124,26 +131,51 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 				.collect(Collectors.toList());
 	}
 
-	public void joinLoyaltyProgram(int customerId, int loyaltyProgramId) {
+	public Membership joinLoyaltyProgram(int customerId, int loyaltyProgramId, String referralCode) {
+		try {
+			Customer customer = customerRepository.findById(customerId)
+					.orElseThrow(() -> new EntityNotFoundException("Customer non trovato con ID: " + customerId));
 
-		Customer customer = customerRepository.findById(customerId).get();
-		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId).get();
-		List<Level> sortedLevels = loyaltyProgram.getLevels().stream()
-				.sorted(Comparator.comparingInt(Level::getPointsThreshold)).collect(Collectors.toList());
-		Level initialLevel = sortedLevels.get(0);
-		Membership membership = loyaltyProgram.enrollCustomer(customer, initialLevel);
-		MembershipAccount newMembershipAccount = new MembershipAccount(membership);
-		membership.setMembershipAccount(newMembershipAccount);
+			LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId).orElseThrow(
+					() -> new EntityNotFoundException("Programma fedeltà non trovato con ID: " + loyaltyProgramId));
 
-		membershipRepository.save(membership);
+			Invitation receivedInvitation = null;
 
-		MemberCard newMemberCard = new MemberCard(membership);
+			if (referralCode != null && !referralCode.isEmpty()) {
+				Customer sender = customerRepository.findByReferralCode(referralCode).orElseThrow(
+						() -> new EntityNotFoundException("Mittente non trovato con referral code: " + referralCode));
 
-		memberCardRepository.save(newMemberCard);
-		newMemberCard.SetCardNumber();
-		memberCardRepository.save(newMemberCard);
-		membership.setMemberCard(newMemberCard);
-		membershipRepository.save(membership);
+				List<Invitation> invitations = invitationRepository.findBySender(sender);
+				receivedInvitation = invitations.stream()
+	                    .filter(invitation -> invitation.getFriendEmail().equals(customer.getEmail()))
+	                    .findFirst()
+	                    .orElse(null);
+
+			}
+
+			List<Level> sortedLevels = loyaltyProgram.getLevels().stream()
+					.sorted(Comparator.comparingInt(Level::getPointsThreshold)).collect(Collectors.toList());
+			Level initialLevel = sortedLevels.get(0);
+			Membership membership = loyaltyProgram.enrollCustomer(customer, initialLevel);
+			MembershipAccount newMembershipAccount = new MembershipAccount(membership);
+			membership.setMembershipAccount(newMembershipAccount);
+		membership.setReceivedInvitation(receivedInvitation);
+
+			membershipRepository.save(membership);
+
+			MemberCard newMemberCard = new MemberCard(membership);
+
+			memberCardRepository.save(newMemberCard);
+			newMemberCard.SetCardNumber();
+			memberCardRepository.save(newMemberCard);
+			membership.setMemberCard(newMemberCard);
+			membershipRepository.save(membership);
+			return membership;
+		} catch (EntityNotFoundException e) {
+
+			System.out.println("Errore durante l'adesione al programma fedeltà: " + e.getMessage());
+		return null;
+		}
 	}
 
 	@Transactional
@@ -368,10 +400,38 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	}
 
 	public Map<String, List<Transaction>> getTransactionsByBenefitType(LoyaltyProgram lProgram) {
-	    return lProgram.getMemberships().stream()
-	            .flatMap(membership -> membership.getAccount().getTransactions().stream())
-	            .collect(Collectors.groupingBy(transaction -> transaction.getLoyaltyBenefit().getType()));
+		return lProgram.getMemberships().stream()
+				.flatMap(membership -> membership.getAccount().getTransactions().stream())
+				.collect(Collectors.groupingBy(transaction -> transaction.getLoyaltyBenefit().getType()));
+	}
+
+	public String inviteFriend(int customerId, int loyaltyProgramId, String friendContact) {
+
+		Customer sender = customerRepository.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Cliente non trovato."));
+
+		LoyaltyProgram loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
+				.orElseThrow(() -> new EntityNotFoundException("Programma fedeltà non trovato."));
+
+		Membership membership = membershipRepository.findByCustomerAndLoyaltyProgram(sender, loyaltyProgram)
+				.orElseThrow(
+						() -> new EntityNotFoundException("Non sei iscritto a questo programma fedeltà."));
+
+		Date invitationDate = new Date();
+		String invitationText = generateDefaultInvitationText(sender, loyaltyProgram, membership, invitationDate);
+		
+		Invitation invitation = new Invitation(sender, friendContact, membership, invitationDate, invitationText);
+		invitationRepository.save(invitation);
+		return invitationText;
+	}
+
+	private String generateDefaultInvitationText(Customer sender, LoyaltyProgram loyaltyProgram, Membership membership,
+			Date invitationDate) {
+		return "Ciao! Ti invito a unirti a " + loyaltyProgram.getProgramName()
+				+ " con il mio codice di riferimento: " + sender.getReferralCodeString()
+				+ ". Registrati e inizia a usufruire dei vantaggi!";
 	}
 
 }
+
 
