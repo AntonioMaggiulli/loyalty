@@ -58,7 +58,9 @@ public class CustomerDashboard {
 				return;
 			}
 
-			Customer selectedCustomer = customerRepository.findById(customerId).orElse(null);
+			Customer selectedCustomer = customerRepository.findById(customerId)
+					.orElseThrow(() -> new EntityNotFoundException("Cliente non trovato."));
+			;
 			if (selectedCustomer != null) {
 				System.out.println(
 						"Tesserato selezionato: " + selectedCustomer.getCognome() + " " + selectedCustomer.getNome());
@@ -127,21 +129,6 @@ public class CustomerDashboard {
 		} while (option < 0 || option > 5);
 	}
 
-	/*
-	 * private void inviteFriendOption(int customerId) {
-	 * 
-	 * System.out.println("\nInvita un amico");
-	 * 
-	 * System.out.print("Inserisci l'email dell'amico: "); String friendContact =
-	 * scanner.nextLine(); try { loyaltyProgramService.inviteFriend(customerId,
-	 * friendContact); System.out.println("Invito inviato con successo all'amico!");
-	 * } catch (Exception e) {
-	 * System.out.println("Errore durante l'invio dell'invito: " + e.getMessage());
-	 * }
-	 * 
-	 * 
-	 * }
-	 */
 	private void inviteFriend(int customerId) {
 		String messageString = null;
 		viewCustomerLoyaltyPrograms(customerId);
@@ -165,10 +152,11 @@ public class CustomerDashboard {
 
 	private void viewCustomerProfile(int customerId) {
 
-		Customer customer = customerRepository.findById(customerId).orElse(null);
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Cliente non trovato."));
+		;
 
 		if (customer != null) {
-			// Visualizza i dati personali del cliente
 			System.out.println(
 					"\n--------------------------------------\nDATI PERSONALI\n--------------------------------------");
 			System.out.println("Nome: " + customer.getNome());
@@ -176,10 +164,8 @@ public class CustomerDashboard {
 			System.out.println("Codice Fiscale: " + customer.getCodiceFiscale());
 			System.out.println("Data di Nascita: " + customer.getDateOfBirth());
 
-			// Visualizza il codice amico
 			System.out.println("\nCodice Amico: " + customer.getReferralCodeString());
 
-			// Visualizza la lista dei programmi fedeltà con i punti
 			System.out.println(
 					"\n--------------------------------------\nPROGRAMMI FEDELTA'\n--------------------------------------\n\n");
 			List<Membership> memberships = customer.getMemberships();
@@ -229,7 +215,9 @@ public class CustomerDashboard {
 
 	@Transactional
 	List<Membership> viewCustomerLoyaltyPrograms(int customerId) {
-		Customer customer = customerRepository.findById(customerId).orElse(null);
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new EntityNotFoundException("Cliente non trovato."));
+		;
 		System.out.println("\n=========================================================\n"
 				+ "Lista dei programmi fedeltà di " + customer.getNome() + " " + customer.getCognome() + ":\n");
 		List<Membership> memberships = customer.getMemberships();
@@ -244,15 +232,6 @@ public class CustomerDashboard {
 		}
 		System.out.println("=========================================================\n");
 		return memberships;
-	}
-
-	private void viewCustomerPoints(int customerId) {
-		Customer customer = customerRepository.findById(customerId).orElse(null);
-		List<Membership> memberships = customer.getMemberships();
-		memberships.forEach(membership -> {
-			System.out.println("\nProgramma: " + membership.getLoyaltyProgram().getProgramName() + ", Punti: "
-					+ membership.getAccount().getCurrentPoints());
-		});
 	}
 
 	private void joinLoyaltyProgram(int customerId) {
@@ -423,5 +402,4 @@ public class CustomerDashboard {
 			}
 		}
 	}
-
 }

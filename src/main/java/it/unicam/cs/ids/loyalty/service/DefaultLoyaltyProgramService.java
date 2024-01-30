@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
-import ch.qos.logback.core.filter.Filter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,6 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -147,9 +146,8 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 				List<Invitation> invitations = invitationRepository.findBySender(sender);
 				receivedInvitation = invitations.stream()
-	                    .filter(invitation -> invitation.getFriendEmail().equals(customer.getEmail()))
-	                    .findFirst()
-	                    .orElse(null);
+						.filter(invitation -> invitation.getFriendEmail().equals(customer.getEmail())).findFirst()
+						.orElse(null);
 
 			}
 
@@ -159,7 +157,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 			Membership membership = loyaltyProgram.enrollCustomer(customer, initialLevel);
 			MembershipAccount newMembershipAccount = new MembershipAccount(membership);
 			membership.setMembershipAccount(newMembershipAccount);
-		membership.setReceivedInvitation(receivedInvitation);
+			membership.setReceivedInvitation(receivedInvitation);
 
 			membershipRepository.save(membership);
 
@@ -174,7 +172,7 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 		} catch (EntityNotFoundException e) {
 
 			System.out.println("Errore durante l'adesione al programma fedeltà: " + e.getMessage());
-		return null;
+			return null;
 		}
 	}
 
@@ -369,18 +367,16 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 	}
 
 	public boolean replaceCard(String oldCard, String newCard) {
-
-		if (oldCard == null || newCard == null) {
-			throw new IllegalArgumentException("I parametri non possono essere nulli.");
-		}
+		Objects.requireNonNull(oldCard, "Il parametro oldCard non può essere nullo.");
+		Objects.requireNonNull(newCard, "Il parametro newCard non può essere nullo.");
 
 		MemberCard oldMemberCard = memberCardRepository.findByCardNumber(oldCard)
 				.orElseThrow(() -> new EntityNotFoundException("MemberCard non trovata con il numero specificato."));
 
-		MemberCard existingNewMemberCard = memberCardRepository.findByCardNumber(newCard).orElse(null);
-		if (existingNewMemberCard != null) {
+		if (memberCardRepository.findByCardNumber(newCard).isPresent()) {
 			throw new IllegalStateException("La nuova carta è già stata assegnata a un'altra MemberCard.");
 		}
+
 		oldMemberCard.setCardNumber(newCard);
 		memberCardRepository.save(oldMemberCard);
 
@@ -414,12 +410,11 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 				.orElseThrow(() -> new EntityNotFoundException("Programma fedeltà non trovato."));
 
 		Membership membership = membershipRepository.findByCustomerAndLoyaltyProgram(sender, loyaltyProgram)
-				.orElseThrow(
-						() -> new EntityNotFoundException("Non sei iscritto a questo programma fedeltà."));
+				.orElseThrow(() -> new EntityNotFoundException("Non sei iscritto a questo programma fedeltà."));
 
 		Date invitationDate = new Date();
 		String invitationText = generateDefaultInvitationText(sender, loyaltyProgram, membership, invitationDate);
-		
+
 		Invitation invitation = new Invitation(sender, friendContact, membership, invitationDate, invitationText);
 		invitationRepository.save(invitation);
 		return invitationText;
@@ -427,11 +422,8 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 
 	private String generateDefaultInvitationText(Customer sender, LoyaltyProgram loyaltyProgram, Membership membership,
 			Date invitationDate) {
-		return "Ciao! Ti invito a unirti a " + loyaltyProgram.getProgramName()
-				+ " con il mio codice di riferimento: " + sender.getReferralCodeString()
-				+ ". Registrati e inizia a usufruire dei vantaggi!";
+		return "Ciao! Ti invito a unirti a " + loyaltyProgram.getProgramName() + " con il mio codice di riferimento: "
+				+ sender.getReferralCodeString() + ". Registrati e inizia a usufruire dei vantaggi!";
 	}
 
 }
-
-
