@@ -30,6 +30,8 @@ public class Membership {
 	@OneToOne
 	private Invitation receivedInvitation;
 
+	private boolean exclusive;
+
 	public Membership(Customer customer, LoyaltyProgram loyaltyProgram) {
 		this.customer = customer;
 		this.loyaltyProgram = loyaltyProgram;
@@ -104,5 +106,13 @@ public class Membership {
 
 	public void setReceivedInvitation(Invitation receivedInvitation) {
 		this.receivedInvitation = receivedInvitation;
+	}
+
+	public boolean isExclusive() {
+		return exclusive;
+	}
+
+	public void setExclusive(boolean exclusive) {
+		this.exclusive = exclusive;
 	}
 }
