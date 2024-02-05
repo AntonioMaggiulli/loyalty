@@ -49,5 +49,4 @@ public class PointsReward extends Benefit {
 
 		return true;
 	}
-
 }

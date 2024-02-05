@@ -18,6 +18,7 @@ import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
 import it.unicam.cs.ids.loyalty.service.DefaultMerchantService;
 import it.unicam.cs.ids.loyalty.util.HandleStatistics;
 import it.unicam.cs.ids.loyalty.util.PasswordGenerator;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import java.text.ParseException;
@@ -64,27 +65,24 @@ public class MerchantDashboard {
 
 			System.out.println("Seleziona un Merchant (inserisci l'ID) o premi 0 per tornare al menu principale:");
 
-			int choice;
+			int merchantId;
 			try {
-				choice = scanner.nextInt();
+				merchantId = scanner.nextInt();
 				scanner.nextLine();
 			} catch (InputMismatchException e) {
 				System.out.println("Input non valido. Inserisci un numero intero.");
 				return;
 			}
 
-			if (choice == 0) {
+			if (merchantId == 0) {
 				return;
 			}
 
-			Merchant selectedMerchant = merchantRepository.findById(choice).orElse(null);
+			Merchant selectedMerchant = merchantRepository.findById(merchantId)
+					.orElseThrow(() -> new EntityNotFoundException("Merchant non trovato con ID: " + merchantId));
 
-			if (selectedMerchant != null) {
-				System.out.println("Merchant selezionato: " + selectedMerchant.getName());
-				displayOptions(choice);
-			} else {
-				System.out.println("Merchant non trovato. Riprova.");
-			}
+			System.out.println("Merchant selezionato: " + selectedMerchant.getName());
+			displayOptions(merchantId);
 		}
 	}
 
@@ -106,7 +104,7 @@ public class MerchantDashboard {
 			System.out.println("7. Crea utenza per dipendente");
 			System.out.println("8. Monitoraggio delle Transazioni dei clienti");
 			System.out.println("9. Statistiche");
-			
+
 			System.out.println("0. Esci");
 
 			int option;
@@ -374,7 +372,7 @@ public class MerchantDashboard {
 			System.out.println(e.getMessage());
 			return;
 		}
-
+		program.sortLevels();
 		Map<Integer, List<Benefit>> benefitsByLevel = loyaltyProgramService.getBenefitsByLoyaltyProgram(programId);
 
 		for (Level level : program.getLevels()) {
@@ -393,11 +391,9 @@ public class MerchantDashboard {
 
 	@Transactional
 	private void joinCoalition(int merchantId) {
-		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
-		if (merchant == null) {
-			System.out.println("Merchant non trovato.");
-			return;
-		}
+		Merchant merchant = merchantRepository.findById(merchantId)
+				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
+
 		System.out.println("\n\nAdesione ad una Coalizione per " + merchant.getName() + "\nCoalizioni Disponibili:\n");
 
 		List<LoyaltyProgram> currentCoalitions = merchant.getPartnerships().stream().map(Partnership::getLoyaltyProgram)
@@ -414,7 +410,8 @@ public class MerchantDashboard {
 		}
 
 		for (int i = 0; i < coalitions.size(); i++) {
-			System.out.println((i + 1) + ". " + coalitions.get(i).getProgramName());
+			LoyaltyProgram lp = coalitions.get(i);
+			System.out.println((i + 1) + ". " + lp.getProgramName());
 		}
 
 		System.out.print("Scegli il numero della coalizione a cui vuoi aderire (0 per uscire): ");
@@ -440,7 +437,9 @@ public class MerchantDashboard {
 	}
 
 	private List<Partnership> viewMerchantLoyaltyProgram(int merchantId) {
-		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+		Merchant merchant = merchantRepository.findById(merchantId)
+				.orElseThrow(() -> new EntityNotFoundException("Commerciante non trovato con ID: " + merchantId));
+
 		System.out.println("\n=========================================================\n"
 				+ "Lista dei programmi fedeltà di " + merchant.getName() + ":\n");
 		List<Partnership> partnerships = merchant.getPartnerships();
@@ -457,12 +456,8 @@ public class MerchantDashboard {
 	}
 
 	private void createLoyaltyProgram(int merchantId) {
-		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
-
-		if (merchant == null) {
-			System.out.println("Merchant non trovato.");
-			return;
-		}
+		Merchant merchant = merchantRepository.findById(merchantId)
+				.orElseThrow(() -> new IllegalArgumentException("Merchant non trovato."));
 
 		System.out.println("Creazione di un nuovo programma fedeltà per " + merchant.getName());
 
@@ -472,15 +467,15 @@ public class MerchantDashboard {
 		System.out.println("Inserisci una breve descrizione del programma:");
 		String loyaltyProgramDescription = scanner.nextLine();
 
-		System.out.println("Inserisci la data di scadenza del programma (formato YYYY-MM-DD):");
+		System.out.println("Inserisci la data di scadenza del programma (formato dd/MM/yyyy):");
 		String expirationDateStr = scanner.nextLine();
 
 		LocalDate expirationDate;
 		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 			expirationDate = LocalDate.parse(expirationDateStr, formatter);
 		} catch (DateTimeParseException e) {
-			System.out.println("Formato data non valido. Si prega di inserire la data nel formato YYYY-MM-DD.");
+			System.out.println("Formato data non valido. Si prega di inserire la data nel formato dd/MM/yyyy.");
 			return;
 		}
 
@@ -620,13 +615,23 @@ public class MerchantDashboard {
 		case "CASHBACK":
 			System.out.print("Inserisci il tasso di cashback (es. 12,5 per 12,5%): ");
 			double cashBackRate;
+
 			try {
 				cashBackRate = scanner.nextDouble() / 100;
 			} catch (InputMismatchException e) {
 				System.out.println("Input non valido. Inserisci un numero.");
 				return;
 			}
-			additionalParams = new Object[] { cashBackRate };
+			double minSpent;
+			System.out.print("Inserisci l'importo minimo speso per ottenere il cashback: ");
+			try {
+				minSpent = scanner.nextDouble();
+			} catch (InputMismatchException e) {
+				System.out.println("Input non valido. Inserisci un numero.");
+				return;
+			}
+			additionalParams = new Object[] { cashBackRate, minSpent };
+
 			break;
 		case "REWARD":
 			System.out.print("Inserisci la quantità disponibile del premio: ");
@@ -750,7 +755,7 @@ public class MerchantDashboard {
 	}
 
 	private void printStatistics(HandleStatistics loyaltyProgramStatistics, LoyaltyProgram program) {
-System.out.println("****************************************************\n");
+		System.out.println("****************************************************\n");
 		int numberOfCustomers = loyaltyProgramStatistics.getNumberOfCustomers();
 		System.out.println("Numero di Clienti: " + numberOfCustomers);
 

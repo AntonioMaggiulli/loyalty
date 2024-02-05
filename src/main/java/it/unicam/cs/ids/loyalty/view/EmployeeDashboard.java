@@ -12,6 +12,7 @@ import it.unicam.cs.ids.loyalty.model.Transaction;
 import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
 import it.unicam.cs.ids.loyalty.repository.MerchantRepository;
 import it.unicam.cs.ids.loyalty.service.DefaultLoyaltyProgramService;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -41,23 +42,26 @@ public class EmployeeDashboard {
 		while (true) {
 			System.out.println("Elenco degli impiegati censiti");
 			List<Merchant> merchants = merchantRepository.findAll();
-			for (Merchant merchant : merchants) {
-				List<Employee> employees = merchant.getEmployees();
-				for (Employee employee : employees) {
-					System.out.println("CODE: " + employee.getId() + " - " + employee.getName());
-				}
-			}
+
+			merchants.forEach(merchant -> {
+				merchant.getEmployees().forEach(employee -> {
+					System.out.println("CODE: " + employee.getId() + " - " + employee.getName() + " - Azienda: "
+							+ merchant.getName());
+				});
+			});
 
 			System.out.println("Inserisci l'ID dell'impiegato:");
 			int employeeId = scanner.nextInt();
 			scanner.nextLine();
 
-			Employee employee = employeeRepository.findById(employeeId).orElse(null);
-			merchantId = employee.getMerchant().getId();
-			displayOptions(employee);
-			if (employee != null) {
+			try {
+				Employee employee = employeeRepository.findById(employeeId).orElseThrow(EntityNotFoundException::new);
 				System.out.println("Impiegato identificato: " + employee.getName());
+				merchantId = employee.getMerchant().getId();
+				displayOptions(employee);
 
+			} catch (EntityNotFoundException e) {
+				System.out.println(e.getMessage());
 			}
 		}
 	}
@@ -91,7 +95,7 @@ public class EmployeeDashboard {
 				break;
 			case 0:
 				System.out.println("Arrivederci!");
-				return;
+				System.exit(0);
 			default:
 				System.out.println("Opzione non valida. Riprova.");
 				break;

@@ -2,9 +2,6 @@ package it.unicam.cs.ids.loyalty.model;
 
 import jakarta.persistence.*;
 
-/**
- * Represents a benefit in the loyalty program.
- */
 @Entity
 public abstract class Benefit {
 
@@ -25,23 +22,10 @@ public abstract class Benefit {
 	@JoinColumn(name = "associated_level_id")
 	private Level associatedLevel;
 	private int pointsRequired = 0;
-	private boolean exclusiveRequired;
 
-	/**
-	 * Default constructor.
-	 */
 	public Benefit() {
 	}
 
-	/**
-	 * Constructs a Benefit with the specified details.
-	 *
-	 * @param name             The name of the benefit.
-	 * @param description      The description of the benefit.
-	 * @param pointsRequired   The points required for the benefit.
-	 * @param offeringMerchant The merchant offering the benefit.
-	 * @param loyaltyProgram   The loyalty program associated with the benefit.
-	 */
 	public Benefit(String type, String name, String description, int pointsRequired, Merchant offeringMerchant,
 			LoyaltyProgram loyaltyProgram) {
 		this.type = type;
@@ -52,71 +36,30 @@ public abstract class Benefit {
 		this.loyaltyProgram = loyaltyProgram;
 	}
 
-	/**
-	 * Retrieves the ID of the benefit.
-	 *
-	 * @return The ID of the benefit.
-	 */
 	public int getId() {
 		return id;
 	}
 
-	/**
-	 * Retrieves the name of the benefit.
-	 *
-	 * @return The name of the benefit.
-	 */
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * Retrieves the description of the benefit.
-	 *
-	 * @return The description of the benefit.
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * Retrieves the points required for the benefit.
-	 *
-	 * @return The points required for the benefit.
-	 */
 	public int getPointsRequired() {
 		return pointsRequired;
 	}
 
-	/**
-	 * Retrieves the amount of euros spent for the benefit.
-	 *
-	 * @return The amount of euros spent for the benefit.
-	 */
-
-	/**
-	 * Retrieves the merchant offering the benefit.
-	 *
-	 * @return The merchant offering the benefit.
-	 */
 	public Merchant getOfferingMerchant() {
 		return offeringMerchant;
 	}
 
-	/**
-	 * Retrieves the loyalty program associated with the benefit.
-	 *
-	 * @return The loyalty program associated with the benefit.
-	 */
 	public LoyaltyProgram getLoyaltyProgram() {
 		return loyaltyProgram;
 	}
 
-	/**
-	 * Sets the loyalty program associated with the benefit.
-	 *
-	 * @param loyaltyProgram The loyalty program to set.
-	 */
 	public void setLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
 		this.loyaltyProgram = loyaltyProgram;
 	}

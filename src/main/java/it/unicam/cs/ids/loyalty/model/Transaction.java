@@ -4,9 +4,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-/**
- * Represents a transaction associated with a loyalty program.
- */
 @Entity
 public class Transaction {
 
@@ -47,56 +44,26 @@ public class Transaction {
 		}
 	}
 
-	/**
-	 * Retrieves the ID of the transaction.
-	 *
-	 * @return The ID of the transaction.
-	 */
 	public int getId() {
 		return id;
 	}
 
-	/**
-	 * Retrieves the loyalty benefit associated with the transaction.
-	 *
-	 * @return The loyalty benefit associated with the transaction.
-	 */
 	public Benefit getLoyaltyBenefit() {
 		return loyaltyBenefit;
 	}
 
-	/**
-	 * Retrieves the points earned in the transaction.
-	 *
-	 * @return The points earned in the transaction.
-	 */
 	public int getPointsEarned() {
 		return pointsEarned;
 	}
 
-	/**
-	 * Retrieves the points spent in the transaction.
-	 *
-	 * @return The points spent in the transaction.
-	 */
 	public int getPointsSpent() {
 		return pointsSpent;
 	}
 
-	/**
-	 * Retrieves the euros spent in the transaction.
-	 *
-	 * @return The euros spent in the transaction.
-	 */
 	public double getMoneySpent() {
 		return moneySpent;
 	}
 
-	/**
-	 * Retrieves the timestamp of the transaction.
-	 *
-	 * @return The timestamp of the transaction.
-	 */
 	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
@@ -134,20 +101,10 @@ public class Transaction {
 		this.membershipAccount = membershipAccount;
 	}
 
-	/**
-	 * Restituisce lo stato della transazione.
-	 *
-	 * @return Lo stato della transazione.
-	 */
 	public RewardStatus getStatus() {
 		return status;
 	}
 
-	/**
-	 * Imposta lo stato della transazione.
-	 *
-	 * @param status Lo stato da impostare.
-	 */
 	public void setStatus(RewardStatus status) {
 		this.status = status;
 	}

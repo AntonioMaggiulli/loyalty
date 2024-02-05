@@ -40,9 +40,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Default implementation of the CrudService for LoyaltyProgram entities.
- */
 @Service
 public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram> {
 
@@ -271,9 +268,14 @@ public class DefaultLoyaltyProgramService implements CrudService<LoyaltyProgram>
 				.orElseThrow(() -> new EntityNotFoundException("Membership non trovata."));
 		int loyaltyProgramId = membership.getLoyaltyProgram().getId();
 		int levelId = membership.getCurrentLevel().getId();
+		Benefit benefit=null;
+		List<Benefit> benefits = benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type, loyaltyProgramId, merchantId, levelId);
 
-		Benefit benefit = benefitRepository.findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
-				loyaltyProgramId, merchantId, levelId).get(0);
+		if (!benefits.isEmpty()) {
+		    benefit = benefits.get(0);
+		} else {  
+		    throw new EntityNotFoundException("Benefit non trovato.");
+		}
 		MembershipAccount account = membership.getAccount();
 
 		Transaction transaction = new Transaction(benefit, amount, account);

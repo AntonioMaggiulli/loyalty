@@ -12,24 +12,16 @@ import it.unicam.cs.ids.loyalty.repository.PartnershipRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-
 import it.unicam.cs.ids.loyalty.repository.EmployeeRepository;
-
 import it.unicam.cs.ids.loyalty.repository.LoyaltyProgramRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Default implementation of the CrudService for Merchant entities.
- */
 @Service
 public class DefaultMerchantService implements CrudService<Merchant> {
 
@@ -107,34 +99,6 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 		return partnership;
 	}
 
-	/*
-	 * public void createBenefit(String type, String name, String description, int
-	 * pointsRequired, int merchantId, int loyaltyProgramId, int levelId, Object...
-	 * additionalParams) { Merchant offeringMerchant =
-	 * merchantRepository.findById(merchantId) .orElseThrow(() -> new
-	 * IllegalArgumentException("Merchant non trovato.")); LoyaltyProgram
-	 * loyaltyProgram = loyaltyProgramRepository.findById(loyaltyProgramId)
-	 * .orElseThrow(() -> new
-	 * IllegalArgumentException("Programma Fedeltà non trovato."));
-	 * 
-	 * List<Level> associatedLevels = levelId == 0 ? new
-	 * ArrayList<>(loyaltyProgram.getLevels()) :
-	 * Collections.singletonList(levelRepository.findById(levelId) .orElseThrow(()
-	 * -> new IllegalArgumentException("Livello non trovato.")));
-	 * 
-	 * for (Level level : associatedLevels) {
-	 * 
-	 * if (type.equals("POINTS_REWARD") && benefitRepository.
-	 * findByTypeAndLoyaltyProgramIdAndOfferingMerchantIdAndAssociatedLevelId(type,
-	 * loyaltyProgramId, merchantId, level.getId()).isPresent()) { throw new
-	 * IllegalArgumentException(
-	 * "Un Benefit di tipo PointsReward esiste già per questo livello fedeltà."); }
-	 * 
-	 * Benefit benefit = BenefitFactory.createBenefit(type, name, description,
-	 * pointsRequired, offeringMerchant, loyaltyProgram, level, additionalParams);
-	 * 
-	 * benefitRepository.save(benefit); } }
-	 */
 
 	@Transactional
 	public void joinCoalition(Merchant merchant, LoyaltyProgram loyaltyProgram) {
@@ -147,13 +111,16 @@ public class DefaultMerchantService implements CrudService<Merchant> {
 
 	public void createNewEmployee(int merchantId, String name, String matricola, String username, String password) {
 
-		Employee newEmployee = new Employee(name, matricola, username, password);
+		Merchant merchant = merchantRepository.findById(merchantId)
+				.orElseThrow(() -> new EntityNotFoundException("Merchant non trovato con l'ID specificato."));
 
-		Merchant merchant = merchantRepository.findById(merchantId).orElse(null);
+		Employee newEmployee = new Employee(name, matricola, username, password);
 		newEmployee.setMerchant(merchant);
+
 		merchant.getEmployees().add(newEmployee);
+
 		employeeRepository.save(newEmployee);
 		merchantRepository.save(merchant);
-
 	}
+
 }

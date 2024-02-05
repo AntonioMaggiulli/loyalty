@@ -99,13 +99,16 @@ public class CustomerDashboard {
 					viewCustomerProfile(customerId);
 					break;
 				case 2:
+					listAllLoyaltyProgram(customerId);
 					viewBenefit(customerId);
+					displayOptions(customerId);
 					break;
 				case 3:
 					joinLoyaltyProgram(customerId);
 					break;
 				case 4:
 					redeemBenefit(customerId);
+					displayOptions(customerId);
 					break;
 				case 5:
 					viewTransactions(customerId);
@@ -127,6 +130,22 @@ public class CustomerDashboard {
 				option = -1;
 			}
 		} while (option < 0 || option > 5);
+	}
+
+	private void listAllLoyaltyProgram(int customerId) {
+		List<LoyaltyProgram> allPrograms = loyaltyProgramService.getAll();
+		if (allPrograms.isEmpty()) {
+			System.out.println(
+					"Non ci sono programmi fedeltà. Riprova tra qualche giorno!\n" + "Premi invio per continuare\n");
+			scanner.nextLine();
+			displayOptions(customerId);
+			return;
+		}
+
+		for (LoyaltyProgram loyaltyProgram : allPrograms) {
+			System.out.println("CODICE: " + loyaltyProgram.getId() + " Programma: " + loyaltyProgram.getProgramName());
+		}
+
 	}
 
 	private void inviteFriend(int customerId) {
@@ -315,7 +334,7 @@ public class CustomerDashboard {
 		newCustomer.setCodiceFiscale(codiceFiscale);
 		newCustomer.setEmail(email);
 		/*
-		 * newCustomer.setEmail(email); newCustomer.setTelefono(telefono);
+		 * newCustomer.setTelefono(telefono);
 		 * newCustomer.setIndirizzo(indirizzo);
 		 */
 		newCustomer.setDateOfBirth(dateOfBirth);
@@ -328,6 +347,14 @@ public class CustomerDashboard {
 
 	private void redeemBenefit(int customerId) {
 
+		List<Membership> customerMemberships = viewCustomerLoyaltyPrograms(customerId);
+		if (customerMemberships.isEmpty()) {
+			System.out.println("Aderisci a un programma tra quelli disponibili su questa piattaforma!\n"
+					+ "Premi invio per continuare\n");
+			scanner.nextLine();
+			displayOptions(customerId);
+			return;
+		}
 		viewBenefit(customerId);
 		while (true) {
 			try {
@@ -336,6 +363,9 @@ public class CustomerDashboard {
 				Benefit benefit = benefitRepository.findById(benefitId)
 						.orElseThrow(() -> new EntityNotFoundException("Benefit non trovato."));
 				String type = benefit.getType();
+				System.out.println("Per riscattare il premio sono necessari "+benefit.getPointsRequired()+" punti. premere invio per continuare");
+				Scanner waitForEnter = new Scanner(System.in);
+			    waitForEnter.nextLine();
 				if (type == "POINTS_REWARD") {
 					return;
 				}
@@ -358,8 +388,9 @@ public class CustomerDashboard {
 				}
 
 				loyaltyProgramService.createTransaction(type, benefit, 0, cardString);
+				
 				System.out.println(
-						"Premio Riscattato, il tuo nuovo saldo è " + membership.getAccount().getCurrentPoints());
+						"Premio Riscattato, il tuo  saldo è stato aggiornato");
 				break;
 			} catch (InputMismatchException e) {
 				System.out.println("Errore: input non valido. Inserisci un numero.");
@@ -371,7 +402,7 @@ public class CustomerDashboard {
 	private void viewBenefit(int customerId) {
 		while (true) {
 			try {
-				viewCustomerLoyaltyPrograms(customerId);
+
 				System.out.print("Inserisci il codice del programma di fedeltà: ");
 				int programId = scanner.nextInt();
 

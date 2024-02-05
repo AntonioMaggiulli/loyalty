@@ -15,12 +15,7 @@ import it.unicam.cs.ids.loyalty.repository.BenefitRepository;
 import java.util.List;
 
 import java.util.Optional;
- 
-/**
 
-* Service class for managing Benefit entities.
-
-*/
 
 @Service("mainBenefitService")
 
@@ -75,36 +70,12 @@ public class DefaultBenefitService implements CrudService<Benefit> {
         benefitRepository.deleteById(id);
 
     }
- 
-    /**
-
-     * Retrieves Benefit entities by the offering merchant.
-
-     *
-
-     * @param offeringMerchant The offering merchant to search for.
-
-     * @return List of Benefit entities offered by the specified merchant.
-
-     */
 
     public List<Benefit> getBenefitsByOfferingMerchant(Merchant offeringMerchant) {
 
         return benefitRepository.findByOfferingMerchant(offeringMerchant);
 
     }
- 
-    /**
-
-     * Retrieves Benefit entities by the associated loyalty program.
-
-     *
-
-     * @param loyaltyProgram The associated loyalty program to search for.
-
-     * @return List of Benefit entities associated with the specified loyalty program.
-
-     */
 
     public List<Benefit> getBenefitsByLoyaltyProgram(LoyaltyProgram loyaltyProgram) {
 
@@ -115,8 +86,6 @@ public class DefaultBenefitService implements CrudService<Benefit> {
 	@Override
 
 	public Optional<Benefit> getByName(String name) {
-
-		// TODO Auto-generated method stub
 
 		return Optional.empty();
 

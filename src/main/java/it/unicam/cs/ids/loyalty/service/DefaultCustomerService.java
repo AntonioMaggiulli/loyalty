@@ -12,9 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Default implementation of the CrudService for Customer entities.
- */
 @Service
 public class DefaultCustomerService implements CrudService<Customer> {
 	@Autowired

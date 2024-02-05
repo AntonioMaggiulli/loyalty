@@ -11,9 +11,6 @@ import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 import it.unicam.cs.ids.loyalty.model.MemberCard;
 import it.unicam.cs.ids.loyalty.model.Membership;
 
-/**
- * Repository interface for managing Membership entities.
- */
 @Repository
 public interface MembershipRepository extends JpaRepository<Membership, Integer> {
 

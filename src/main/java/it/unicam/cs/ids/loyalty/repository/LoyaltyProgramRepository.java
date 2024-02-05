@@ -9,28 +9,11 @@ import it.unicam.cs.ids.loyalty.model.LoyaltyProgram;
 
 import java.util.List;
 
-/**
- * Repository for the {@link LoyaltyProgram} entity. Provides default CRUD
- * (Create, Read, Update, Delete) operations and the ability to define custom
- * queries.
- */
 @Repository
 public interface LoyaltyProgramRepository extends JpaRepository<LoyaltyProgram, Integer> {
 
-	/**
-	 * Finds a loyalty program by the specified program name.
-	 *
-	 * @param programName The name of the loyalty program to search for.
-	 * @return An instance of {@link LoyaltyProgram} if found, or an empty Optional.
-	 */
 	List<LoyaltyProgram> findByProgramName(String programName);
 
-	/**
-	 * Finds loyalty program by the condition "is coalition" true/false
-	 *
-	 * @param programName The name of the loyalty program to search for.
-	 * @return An instance of {@link LoyaltyProgram} if found, or an empty Optional.
-	 */
 	List<LoyaltyProgram> findByIsCoalition(boolean isCoalition);
 
 	@Query("SELECT lp FROM LoyaltyProgram lp JOIN lp.partnerships p WHERE p.merchant.id = :merchantId")

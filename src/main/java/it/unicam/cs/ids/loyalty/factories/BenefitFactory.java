@@ -45,14 +45,16 @@ public class BenefitFactory {
 		    Benefit benefit;
 		    switch (type) {
 		        case "COUPON":
-		            Date expirationDate = (Date) additionalParams[0]; // Assumendo che il primo parametro aggiuntivo sia la data di scadenza
+		            Date expirationDate = (Date) additionalParams[0];
 		            benefit = new Coupon();
 		            ((Coupon) benefit).setExpiringDate(expirationDate);
 		            break;
 		        case "CASHBACK":
-		            double cashBackRate = (Double) additionalParams[0]; // Assumendo che il primo parametro aggiuntivo sia il tasso di cashback
+		            double cashBackRate = (Double) additionalParams[0];
+		            Double minSpent= (Double) additionalParams[1];
 		            benefit = new Cashback();
 		            ((Cashback) benefit).setCashBackRate(cashBackRate);
+		            ((Cashback) benefit).setMinSpent(minSpent);
 		            break;
 		        case "REWARD":
 		        	int qtyAvailable = (Integer) additionalParams[0];
@@ -60,8 +62,8 @@ public class BenefitFactory {
 		            ((Reward) benefit).setQty(qtyAvailable);
 		            break;
 		        case "POINTS_REWARD":
-		            int earnsPoints = (Integer) additionalParams[0]; // Assumendo che il primo parametro aggiuntivo sia il numero di punti guadagnati
-		            double moneySpent = (Double) additionalParams[1]; // Assumendo che il secondo parametro aggiuntivo sia la quantità di denaro speso
+		            int earnsPoints = (Integer) additionalParams[0]; 
+		            double moneySpent = (Double) additionalParams[1];
 		            benefit = new PointsReward();
 		            ((PointsReward) benefit).setEarnsPoints(earnsPoints);
 		            ((PointsReward) benefit).setMoneySpent(moneySpent);

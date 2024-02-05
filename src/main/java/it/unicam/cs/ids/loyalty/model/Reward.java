@@ -11,7 +11,6 @@ public class Reward extends Benefit {
 	public void applyBenefit(Transaction transaction) {
 		transaction.setPointsSpent(transaction.getLoyaltyBenefit().getPointsRequired());
 		qtyAvailable--;
-
 	}
 
 	public int getQty() {
@@ -21,7 +20,7 @@ public class Reward extends Benefit {
 	public void setQty(int qty) {
 		this.qtyAvailable = qty;
 	}
-	
+
 	@Override
 	public boolean isEligibleForRedemption(MembershipAccount account) {
 
