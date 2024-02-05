@@ -10,9 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 
-/**
- * JPA Entity representing a member card.
- */
 @Entity
 public class MemberCard {
 
@@ -33,20 +30,10 @@ public class MemberCard {
 		this.membership = membership;
 	}
 
-	/**
-	 * Gets the ID of the member card.
-	 *
-	 * @return The ID.
-	 */
 	public int getId() {
 		return id;
 	}
 
-	/**
-	 * Gets the automatically generated card number of the member card.
-	 *
-	 * @return The card number.
-	 */
 	public String getCardNumber() {
 		return cardNumber;
 	}

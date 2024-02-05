@@ -35,9 +35,6 @@ public class LoyaltyProgram {
 
 	private LocalDate expiringDate;
 
-	/**
-	 * Default constructor.
-	 */
 	public LoyaltyProgram() {
 
 	}
@@ -170,5 +167,4 @@ public class LoyaltyProgram {
 		LoyaltyProgram other = (LoyaltyProgram) obj;
 		return id == other.id;
 	}
-
 }

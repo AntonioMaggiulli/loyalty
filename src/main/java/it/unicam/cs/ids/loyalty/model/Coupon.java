@@ -33,7 +33,7 @@ public class Coupon extends Benefit {
 
 	@Override
 	public void applyBenefit(Transaction transaction) {
-		//non implementato
+		transaction.setPointsSpent(transaction.getLoyaltyBenefit().getPointsRequired());
 		// TODO
 	}
 

@@ -14,7 +14,7 @@ public class Cashback extends Benefit {
 
 	@Override
 	public void applyBenefit(Transaction transaction) {
-		//non implementato 
+		transaction.setPointsSpent(transaction.getLoyaltyBenefit().getPointsRequired());
 		//TODO
 	}
 
@@ -30,6 +30,14 @@ public class Cashback extends Benefit {
 	public boolean isEligibleForRedemption(MembershipAccount account) {
 
 		return this.getPointsRequired() <= account.getLoyaltyPoints();
+	}
+
+	public double getMinSpent() {
+		return minSpent;
+	}
+
+	public void setMinSpent(double minSpent) {
+		this.minSpent = minSpent;
 	}
 
 }

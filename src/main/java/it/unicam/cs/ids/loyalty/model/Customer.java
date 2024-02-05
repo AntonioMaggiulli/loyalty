@@ -1,5 +1,5 @@
 package it.unicam.cs.ids.loyalty.model;
- 
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,83 +11,56 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
- 
-/**
-* JPA Entity representing a customer.
-*/
+
 @Entity
 public class Customer {
- 
-    public Customer() {
+
+	public Customer() {
 		super();
 	}
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
- 
-    @Column(nullable = false)
-    private String cognome;
-    private String nome;
-    private String codiceFiscale;
-    private String email;
-    private String telefono;
-    private String indirizzo;
-    private Date dateOfBirth;
-    private String referralCode;
-    
-    @OneToMany(mappedBy = "writer")
-    private List<Feedback> feedbacks;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
 
-    @OneToMany(mappedBy = "sender")
-    private List<Invitation> invitations;
+	@Column(nullable = false)
+	private String cognome;
+	private String nome;
+	private String codiceFiscale;
+	private String email;
+	private String telefono;
+	private String indirizzo;
+	private Date dateOfBirth;
+	private String referralCode;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
-    private List<Membership> memberships;
-    /**
-     * Gets the ID of the customer.
-     *
-     * @return The customer ID.
-     */
-    public int getId() {
-       return id;
-    }
- 
-    /**
-     * Gets the last name of the customer.
-     *
-     * @return The customer's last name.
-     */
-    public String getCognome() {
-       return cognome;
-    }
- 
-    /**
-     * Sets the last name of the customer.
-     *
-     * @param cognome The new last name.
-     */
-    public void setCognome(String cognome) {
-       this.cognome = cognome;
-    }
- 
-    /**
-     * Gets the first name of the customer.
-     *
-     * @return The customer's first name.
-     */
-    public String getNome() {
-       return nome;
-    }
- 
-    /**
-     * Sets the first name of the customer.
-     *
-     * @param nome The new first name.
-     */
-    public void setNome(String nome) {
-       this.nome = nome;
-    }
+	@OneToMany(mappedBy = "writer")
+	private List<Feedback> feedbacks;
+
+	@OneToMany(mappedBy = "sender")
+	private List<Invitation> invitations;
+
+	@OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+	private List<Membership> memberships;
+
+	public int getId() {
+		return id;
+	}
+
+	public String getCognome() {
+		return cognome;
+	}
+
+	public void setCognome(String cognome) {
+		this.cognome = cognome;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
 
 	public String getCodiceFiscale() {
 		return codiceFiscale;
@@ -164,33 +137,34 @@ public class Customer {
 	public void setId(int id) {
 		this.id = id;
 	}
+
 	public void addFeedback(Feedback feedback) {
-	    if (feedbacks == null) {
-	        feedbacks = new ArrayList<>();
-	    }
-	    feedbacks.add(feedback);
-	    feedback.setWriter(this);
+		if (feedbacks == null) {
+			feedbacks = new ArrayList<>();
+		}
+		feedbacks.add(feedback);
+		feedback.setWriter(this);
 	}
+
 	public void removeFeedback(Feedback feedback) {
-	    if (feedbacks != null) {
-	        feedbacks.remove(feedback);
-	        feedback.setWriter(null);
-	    }
+		if (feedbacks != null) {
+			feedbacks.remove(feedback);
+			feedback.setWriter(null);
+		}
 	}
+
 	public void addInvitation(Invitation invitation) {
-	    if (invitations == null) {
-	        invitations = new ArrayList<>();
-	    }
-	    invitations.add(invitation);
-	    invitation.setSender(this);
+		if (invitations == null) {
+			invitations = new ArrayList<>();
+		}
+		invitations.add(invitation);
+		invitation.setSender(this);
 	}
 
 	public void removeInvitation(Invitation invitation) {
-	    if (invitations != null && invitations.contains(invitation)) {
-	        invitations.remove(invitation);
-	        invitation.setSender(null);
-	    }
+		if (invitations != null && invitations.contains(invitation)) {
+			invitations.remove(invitation);
+			invitation.setSender(null);
+		}
 	}
-
-
 }

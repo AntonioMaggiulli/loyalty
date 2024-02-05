@@ -19,7 +19,6 @@ public class Feedback {
 	private Customer writer;
 
 	public Feedback() {
-		// Costruttore vuoto per JPA
 	}
 
 	public Feedback(String text, Date date, int rating, Customer writer) {

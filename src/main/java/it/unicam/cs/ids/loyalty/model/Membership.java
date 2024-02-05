@@ -2,9 +2,6 @@ package it.unicam.cs.ids.loyalty.model;
 
 import jakarta.persistence.*;
 
-/**
- * Represents a membership in a loyalty program.
- */
 @Entity
 public class Membership {
 
@@ -29,18 +26,10 @@ public class Membership {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "level_id", nullable = false)
 	private Level currentLevel;
-	
+
 	@OneToOne
 	private Invitation receivedInvitation;
-;
 
-
-	/**
-	 * Creates a new membership.
-	 *
-	 * @param customer       The customer associated with the membership.
-	 * @param loyaltyProgram The loyalty program associated with the membership.
-	 */
 	public Membership(Customer customer, LoyaltyProgram loyaltyProgram) {
 		this.customer = customer;
 		this.loyaltyProgram = loyaltyProgram;
@@ -50,38 +39,18 @@ public class Membership {
 	public Membership() {
 	}
 
-	/**
-	 * Retrieves the ID of the membership.
-	 *
-	 * @return The ID of the membership.
-	 */
 	public int getId() {
 		return id;
 	}
 
-	/**
-	 * Retrieves the customer associated with the membership.
-	 *
-	 * @return The customer associated with the membership.
-	 */
 	public Customer getCustomer() {
 		return customer;
 	}
 
-	/**
-	 * Retrieves the loyalty program associated with the membership.
-	 *
-	 * @return The loyalty program associated with the membership.
-	 */
 	public LoyaltyProgram getLoyaltyProgram() {
 		return loyaltyProgram;
 	}
 
-	/**
-	 * Retrieves the membership account associated with the membership.
-	 *
-	 * @return The membership account associated with the membership.
-	 */
 	public MembershipAccount getMembershipAccount() {
 		return account;
 	}
